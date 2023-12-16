@@ -69,7 +69,6 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="id" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="courseid" TYPE="unique" FIELDS="courseid, skill"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="tool_skills_userpoints" COMMENT="Table to maintain the user points for each skills">

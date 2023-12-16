@@ -79,4 +79,22 @@ class observer {
         // Remove the course skills of the deleted course.
         courseskills::get($courseid)->remove_instance_skills($courseid);
     }
+
+
+    /**
+     * Observe the course module completion event and update the assigned module skills of this course for this user.
+     *
+     * @param \core\event\course_module_completion_updated $event
+     * @return void
+     */
+    public static function course_module_completed(\core\event\course_module_completion_updated $event) {
+
+        //Fetch the event data.
+        $data = $event->get_data();
+        // ID of the course module completed user.
+        $courseid = $data['courseid'];
+        $relateduserid = $data['relateduserid'];
+        // Manage the upon course module completion options for various skills assigned in this course module.
+        courseskills::get($courseid)->manage_course_module_completions($relateduserid, $data);
+    }
 }

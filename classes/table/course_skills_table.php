@@ -80,7 +80,7 @@ class course_skills_table extends \table_sql {
         // Do not make the table collapsible.
         $this->collapsible(false);
 
-        $this->set_attribute('id', 'tool_mod_skills_list');
+        $this->set_attribute('id', 'tool_skills_list');
     }
 
     /**

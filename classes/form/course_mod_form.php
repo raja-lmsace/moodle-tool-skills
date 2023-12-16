@@ -56,15 +56,15 @@ class course_mod_form extends \core_form\dynamic_form {
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
 
-        // Skill id.
-        $mform->addElement('hidden', 'skill', $skill);
-        $mform->setType('skill', PARAM_INT);
-
         // Courseid hidden field.
         $mform->addElement('hidden', 'courseid', $courseid);
         $mform->setType('courseid', PARAM_INT);
 
-        // moduleid hidden field.
+        // Skill id.
+        $mform->addElement('hidden', 'skill', $skill);
+        $mform->setType('skill', PARAM_INT);
+
+        // Moduleid hidden field.
         $mform->addElement('hidden', 'modid', $modid);
         $mform->setType('modid', PARAM_INT);
 
@@ -125,6 +125,7 @@ class course_mod_form extends \core_form\dynamic_form {
 
         // Get the submitted content data.
         $record = (object) $this->get_data();
+
 
         if (isset($record->id) && $record->id != '' && $DB->record_exists('tool_skills_course_activity', ['id' => $record->id])) {
             // Level id to update.

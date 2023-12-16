@@ -64,7 +64,7 @@ define(['jquery', 'core/modal_factory', 'core/str', 'core_form/modalform'], func
          *
          * @param {Integer} courseID
          */
-        static createInstances(courseID) {
+        static createInstances(courseID, modID) {
 
             let skills = document.querySelectorAll(SELECTORS.skillsRow);
 
@@ -78,7 +78,7 @@ define(['jquery', 'core/modal_factory', 'core/str', 'core_form/modalform'], func
                     if (skillID in skillsList) {
                         skill = skillsList[skillID];
                     } else {
-                        skill = new ToolSkillsCourses(skillID, courseID);
+                        skill = new ToolSkillsCourses(skillID, courseID, modID);
                         skillsList[skillID] = skill;
                     }
                 });
@@ -104,8 +104,8 @@ define(['jquery', 'core/modal_factory', 'core/str', 'core_form/modalform'], func
 
     return {
 
-        init: function(courseID) {
-            ToolSkillsCourses.createInstances(courseID);
+        init: function(courseID, modID) {
+            ToolSkillsCourses.createInstances(courseID, modID);
         }
     };
 });
