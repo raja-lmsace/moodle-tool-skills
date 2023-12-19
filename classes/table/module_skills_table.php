@@ -34,7 +34,7 @@ use core_course_category;
 use core\output\notification;
 use core_table\dynamic;
 use html_writer;
-use tool_skills\courseskills;
+use tool_skills\moduleskills;
 use tool_skills\skills;
 
 /**
@@ -179,8 +179,7 @@ class module_skills_table extends \table_sql {
     public function col_actions(stdClass $row) : string {
         global $OUTPUT;
 
-        // print_object($row);
-        // exit;
+
         // Base url to edit the skills.
         $baseurl = new \moodle_url('/admin/tool/skills/manage/editcourse.php', [
             'skill' => $row->id,

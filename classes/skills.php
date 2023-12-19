@@ -245,6 +245,8 @@ class skills {
             // Delete all its actions.
             \tool_skills\courseskills::remove_skills($this->skillid);
 
+            \tool_skills\moduleskills::remove_skills($this->skillid);
+
             return true;
         }
         return false;
@@ -368,6 +370,23 @@ class skills {
                 break;
         }
 
+        switch ($csdata->uponmodcompletion) {
+
+            case self::COMPLETIONFORCELEVEL:
+                $this->force_level($skillobj, $csdata->level, $userid);
+                break;
+
+            case self::COMPLETIONSETLEVEL:
+                $this->moveto_level($skillobj, $csdata->level, $userid);
+                break;
+            // case self::COMPLETIONPOINTSGRADE:
+            //     $this->get_activity_grade_points($skillobj, $userid);
+            //     break;
+            case self::COMPLETIONPOINTS:
+                $this->increase_points($skillobj, $csdata->points, $userid);
+                break;
+        }
+
         $transaction->allow_commit();
     }
 
@@ -385,7 +404,7 @@ class skills {
         // Fetch the user skill record.
         $condition = ['userid' => $userid, 'skill' => $this->skillid];
         $userskill = $DB->get_record('tool_skills_userpoints', $condition);
-
+        
         if (empty($userskill) && $create) {
 
             $record = $condition;
@@ -459,7 +478,8 @@ class skills {
         // Increase the allocated points with current user points.
         $levelpoints = $userskill->points + $points;
         // Find the method of the course skills.
-        $method = ($skillobj instanceof \tool_skills\courseskills) ? 'course' : '';
+        $method = ($skillobj instanceof \tool_skills\courseskills) ? 'course' : 'activity';
+
         // Update the new points for this user in db.
         $this->set_userskill_points($userid, $levelpoints);
 
@@ -505,7 +525,7 @@ class skills {
      */
     protected function create_user_point_award(allocation_method $skillobj, int $userid, int $points) {
         // Find the method of the course skills.
-        $method = ($skillobj instanceof \tool_skills\courseskills) ? 'course' : '';
+        $method = ($skillobj instanceof \tool_skills\courseskills) ? 'course' : 'activity';
 
         // Allocation method id.
         $methodid = $skillobj->get_data()->id;
@@ -588,4 +608,11 @@ class skills {
 
         return $skillid ?? false;
     }
+
+    /**
+     * Get the grade points form the activity.
+     */
+    // public function get_activity_grade_points(allocation_method $skillobj, $userid) {
+
+    // }
 }

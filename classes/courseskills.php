@@ -60,7 +60,7 @@ class courseskills extends \tool_skills\allocation_method {
     }
 
     /**
-     * Create the retunr the clas instance for this skillcourse id.
+     * Create the retun the clas instance for this skillcourse id.
      *
      * @param int $courseid
      * @return self
@@ -70,7 +70,7 @@ class courseskills extends \tool_skills\allocation_method {
     }
 
     /**
-     * Create the retunr the clas instance for this skillcourse id.
+     * Fetch to the skills course data .
      *
      * @param int $skillid
      * @return self
@@ -105,16 +105,6 @@ class courseskills extends \tool_skills\allocation_method {
         return array_map(fn($sk) => skills::get($sk->skill), $skills);
     }
 
-    /**
-     * Fetch the module skills for this course.
-     *
-     * @return array
-     */
-    public function get_course_activity_skills($modid) : array {
-        global $DB;
-        $modskills = $DB->get_records('tool_skills_course_activity', ['modid' => $modid ]);
-        return $modskills;
-    }
 
     /**
      * Remove the course skills records.
@@ -221,39 +211,6 @@ class courseskills extends \tool_skills\allocation_method {
             }
         }
     }
-
-    /**
-     * Manage the course module completion to allocate the points to the module course skill.
-     *
-     * Given course module is completed for this user, fetch tht list of skills assigned for this course module.
-     * Trigger the skills to update the user points based on the upon completion option for this skill added in course module.
-     *
-     * @param int $userid
-     * @return void
-     */
-    public function manage_course_module_completions($userid, $modid) {
-        global $CFG, $DB;
-
-        require_once($CFG->dirroot . '/lib/completionlib.php');
-
-        $completion = new completion_info($this->get_course());
-
-        if (!$completion->is_enabled()) {
-            return null;
-        }
-
-        // Get the number of modules that support completion.
-        $modulecompletion = $completion->get_completion_data($modid, $userid, []);
-        if (isset($modulecompletion['completionstate']) && $modulecompletion['completionstate'] == COMPLETION_COMPLETE) {
-            //$skills = $this->get_course_activity_skills($modid);
-            $skills = $DB->get_record('tool_skills_course_activity', ['modid' => $modid ]);
-            return $skills;
-        } else {
-            return false;
-        }
-
-    }
-
 
 
     /**

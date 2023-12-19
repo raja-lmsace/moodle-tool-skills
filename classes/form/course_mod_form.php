@@ -27,7 +27,7 @@ namespace tool_skills\form;
 defined('MOODLE_INTERNAL') || die();
 
 use tool_skills\skills;
-use tool_skills\courseskills;
+use tool_skills\moduleskills;
 use moodle_url;
 use stdClass;
 
@@ -100,10 +100,10 @@ class course_mod_form extends \core_form\dynamic_form {
      * @return \context
      */
     protected function get_context_for_dynamic_submission(): \context {
-        // Course record id.
-        $courseid = $this->optional_param('courseid', 0, PARAM_INT);
+        // Course module record id.
+        $cmid = $this->optional_param('modid', 0, PARAM_INT);
 
-        return $courseid ? \context_course::instance($courseid) : \context_system::instance();
+        return $cmid ? \context_module::instance($cmid) : \context_system::instance();
     }
 
     /**
@@ -141,7 +141,7 @@ class course_mod_form extends \core_form\dynamic_form {
             $skillcourseid = $DB->insert_record('tool_skills_course_activity', $record);
         }
 
-        //courseskills::get($record->courseid)->manage_users_completion();
+        moduleskills::get($record->courseid, $record->modid)->manage_users_modcompletion();
 
         return true;
     }

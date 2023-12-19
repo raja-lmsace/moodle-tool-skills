@@ -25,6 +25,7 @@
 namespace tool_skills\events;
 
 use tool_skills\courseskills;
+use tool_skills\moduleskills;
 use tool_skills\skills;
 use tool_skills\user;
 
@@ -91,10 +92,30 @@ class observer {
 
         //Fetch the event data.
         $data = $event->get_data();
+
         // ID of the course module completed user.
         $courseid = $data['courseid'];
+        $cmid = $data['contextinstanceid'];
         $relateduserid = $data['relateduserid'];
         // Manage the upon course module completion options for various skills assigned in this course module.
-        courseskills::get($courseid)->manage_course_module_completions($relateduserid, $data);
+        moduleskills::get($courseid, $cmid)->manage_course_module_completions($relateduserid, $cmid, $data);
+    }
+
+    /**
+     * Course module deleted, then deletes the course module skills records.
+     *
+     * @param \core\event\course_module_deleted $event
+     * @return void
+     */
+    public static function course_module_deleted(\core\event\course_module_deleted $event) {
+
+        // Fetch the event data.
+        $data = $event->get_data();
+        // ID of the completed course.
+        $courseid = $data['courseid'];
+        // ID of the deleted course module.
+        $cmid = $data['contextinstanceid'];
+        // Remove the course module skills of the deleted course module.
+        moduleskills::get($courseid, $cmid)->remove_instance_skills();
     }
 }

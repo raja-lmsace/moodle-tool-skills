@@ -71,6 +71,7 @@ class logs {
             'timecreated' => time()
         ];
 
+
         return $DB->insert_record('tool_skills_awardlogs', $record);
     }
 

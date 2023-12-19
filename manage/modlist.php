@@ -51,6 +51,7 @@ require_login();
 // Access checks.
 require_capability('tool/skills:managecourseskills', $context);
 
+
 // Prepare the page (to make sure that all necessary information is already set even if we just handle the actions as a start).
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/admin/tool/skills/manage/modlist.php', ['courseid' => $courseid, 'modid' => $modid]));
@@ -70,7 +71,6 @@ $PAGE->navbar->add(get_string('skills', 'tool_skills'),
 $table = new \tool_skills\table\module_skills_table($courseid, $modid);
 $table->define_baseurl($PAGE->url);
 
-
 // Header.
 echo $OUTPUT->header();
 
@@ -87,5 +87,6 @@ if ($countmenus < 1) {
     $table->out(50, true);
     $PAGE->requires->js_call_amd('tool_skills/modskills', 'init', ['courseid' => $courseid, 'modid' => $modid]);
 }
+
 // Footer.
 echo $OUTPUT->footer();
