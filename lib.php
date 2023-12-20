@@ -149,8 +149,14 @@ function tool_skills_myprofile_navigation(tree $tree, $user, $iscurrentuser, $co
                 $pointstoearn = $skillcourse->get_points_earned_fromcourse();
                 $courseurl = new moodle_url('/course/view.php', ['id' => $data->courseid]);
 
+                // Course module skill object.
+                //$modskill = $data->skillcoursemodule;
+                //$pointstoearnmod = $modskill->get_points_earned_fromcoursemodule();
+
                 // Points earned from this course.
                 $pointsfromcourse = $skillcourse->get_user_earned_points($USER->id);
+
+                //$pointsfromodule = $modskill->get_user_earned_points($USER->id);
 
                 $course = $data->skillcourse->get_course();
                 $li = html_writer::link($courseurl, format_string($course->fullname));
@@ -162,6 +168,14 @@ function tool_skills_myprofile_navigation(tree $tree, $user, $iscurrentuser, $co
                 $li .= html_writer::tag('p', $coursepointstr, ['class' => 'skills-points-'.$course->shortname]);
 
                 $skillstr .= html_writer::tag('li', $li);
+
+                // $modpointstr = get_string('pointsforcompletion', 'tool_skills') . " : " . $pointstoearnmod;
+                // $modpointstr .= html_writer::tag('b',
+                //     " (".get_string('earned', 'tool_skills') . ": " .( $pointsfromodule ?? 0) . ")" );
+                // $modli = html_writer::tag('p', $modpointstr, ['class' => 'skills-points-'.$course->shortname]);
+
+                // $skillstr .= html_writer::tag('li', $modli);
+
             }
 
             $skillstr .= html_writer::end_tag('ul'); // End the skill list.

@@ -28,6 +28,9 @@ use completion_info;
 use moodle_exception;
 use stdClass;
 
+require_once $CFG->dirroot.'/grade/lib.php';
+require_once $CFG->dirroot.'/grade/querylib.php';
+
 /**
  * Manage the skills for course module. Trigger skills to assign point for users.
  */
@@ -69,7 +72,7 @@ class moduleskills extends \tool_skills\allocation_method {
     }
 
     /**
-     * Create the retun the clas instance for this skill coursemodule id.
+     * Create the retun class instance for this skill coursemodule id.
      *
      * @param int $courseid
      * @return self
@@ -88,7 +91,7 @@ class moduleskills extends \tool_skills\allocation_method {
     }
 
     /**
-     * Fetch to the skills course module data .
+     * Fetch to the skills course module data.
      *
      * @param int $skillid
      * @return self
@@ -122,9 +125,9 @@ class moduleskills extends \tool_skills\allocation_method {
     public function remove_instance_skills() {
         global $DB;
 
-        $DB->delete_records('tool_skills_course_activity', ['modid' => $this->cmid]);
+        $DB->delete_records('tool_skills_course_activity', ['id' => $this->instanceid]);
 
-        $this->get_logs()->delete_method_log($this->cmid, 'activity');
+        $this->get_logs()->delete_method_log($this->instanceid, 'activity');
     }
 
     /**
@@ -215,11 +218,11 @@ class moduleskills extends \tool_skills\allocation_method {
         // Get the number of modules that support completion.
         $modulecompletion = $completion->get_completion_data($cmid, $userid, []);
         if (isset($modulecompletion['completionstate']) && $modulecompletion['completionstate'] == COMPLETION_COMPLETE) {
-            $modskills = $this->get_instance_skills($cmid);
+            $modskills = $this->get_instance_skills();
             foreach ($modskills as $modskillid => $modskill) {
                 // Create a skill course record instance for this skill.
                 $this->set_skill_instance($modskillid);
-                $modskill->assign_skills($this, $userid);
+               $modskill->assign_mod_skills($this, $userid);
             }
         }
     }
@@ -252,5 +255,19 @@ class moduleskills extends \tool_skills\allocation_method {
         global $DB;
 
         $DB->delete_records('tool_skills_course_activity', ['skill' => $skillid]);
+    }
+
+    /**
+     * Get the grade point form the completed skill activity.
+     *
+     * @param int $userid related Userid
+     * @return int $gradepoint.
+     */
+    public static function get_grade_point(int $cmid, int $userid) {
+        $cm = get_coursemodule_from_id(false, $cmid);
+        $grades = grade_get_grades($cm->course, 'mod', $cm->modname, $cm->instance, $userid);
+        $grade = reset($grades->items[0]->grades);
+        $gradepoint = floatval($grade->grade);
+        return $gradepoint;
     }
 }

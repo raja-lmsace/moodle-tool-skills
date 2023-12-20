@@ -369,21 +369,41 @@ class skills {
                 $this->increase_points($skillobj, $csdata->points, $userid);
                 break;
         }
+        $transaction->allow_commit();
+    }
 
-        switch ($csdata->uponmodcompletion) {
+    /**
+     * Assign the module skills to users.
+     *
+     * @param \tool_skills\allocation_method $modskillsobj
+     * @param int $userid
+     *
+     * @return void
+     */
+    public function assign_mod_skills($modskillsobj, int $userid) {
+        global $DB;
+
+        $moduledata = $modskillsobj->get_data();
+
+        // Start the database transaction.
+        $transaction = $DB->start_delegated_transaction();
+
+        switch ($moduledata->uponmodcompletion) {
 
             case self::COMPLETIONFORCELEVEL:
-                $this->force_level($skillobj, $csdata->level, $userid);
+                $this->force_level($modskillsobj, $moduledata->level, $userid);
                 break;
 
             case self::COMPLETIONSETLEVEL:
-                $this->moveto_level($skillobj, $csdata->level, $userid);
+                $this->moveto_level($modskillsobj, $moduledata->level, $userid);
                 break;
-            // case self::COMPLETIONPOINTSGRADE:
-            //     $this->get_activity_grade_points($skillobj, $userid);
-            //     break;
+
             case self::COMPLETIONPOINTS:
-                $this->increase_points($skillobj, $csdata->points, $userid);
+                $this->increase_points($modskillsobj, $moduledata->points, $userid);
+                break;
+
+            case self::COMPLETIONPOINTSGRADE:
+                $this->get_activity_grade_points($modskillsobj, $userid, $moduledata->modid);
                 break;
         }
 
@@ -404,7 +424,7 @@ class skills {
         // Fetch the user skill record.
         $condition = ['userid' => $userid, 'skill' => $this->skillid];
         $userskill = $DB->get_record('tool_skills_userpoints', $condition);
-        
+
         if (empty($userskill) && $create) {
 
             $record = $condition;
@@ -611,8 +631,14 @@ class skills {
 
     /**
      * Get the grade points form the activity.
+     *
+     * @param allocation_method $skillobj
+     * @param int $userid userid
+     * @param int $cmid course module id.
+     * @return void
      */
-    // public function get_activity_grade_points(allocation_method $skillobj, $userid) {
-
-    // }
+    public function get_activity_grade_points(allocation_method $skillobj, int $userid, int $cmid) {
+        $gradepoints = \tool_skills\moduleskills::get_grade_point($cmid, $userid);
+        $this->increase_points($skillobj, $gradepoints, $userid);
+    }
 }

@@ -97,6 +97,7 @@ class observer {
         $courseid = $data['courseid'];
         $cmid = $data['contextinstanceid'];
         $relateduserid = $data['relateduserid'];
+
         // Manage the upon course module completion options for various skills assigned in this course module.
         moduleskills::get($courseid, $cmid)->manage_course_module_completions($relateduserid, $cmid, $data);
     }
