@@ -100,7 +100,7 @@ class archived_skills extends \table_sql {
         return format_text($row->description, FORMAT_HTML, ['overflow' => false]);
     }
 
-     /**
+    /**
      * Name of the skill column. Format the string to support multilingual.
      *
      * @param stdClass $row
