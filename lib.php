@@ -55,33 +55,6 @@ function tool_skills_extend_navigation_course(navigation_node $navigation, stdCl
             $navigation->add_node($node, 'gradebooksetup');
         }
     }
-
-    // Add the manage skills page to the secondary navigation on the mod page.
-    if ($PAGE->context->contextlevel == CONTEXT_MODULE && has_capability('tool/skills:managecourseskills', $context)) {
-
-        $content = '';
-        $id = $context->instanceid;
-        $name = get_string('manageskills', 'tool_skills');
-        $moduleid = optional_param('id', null, PARAM_INT);
-        $manageurl = new moodle_url('/admin/tool/skills/manage/modlist.php', [
-            'courseid' => $id, 'modid' => $moduleid,
-        ]);
-        $content .= html_writer::start_tag("li", array("data-key" => $name, "class" => "nav-item",
-                            "role" => "none", "data-forceintomoremenu" => "true"));
-        $content .= html_writer::link($manageurl, $name, array('role' => 'menuitem', 'class' => 'dropdown-item'));
-        $content .= html_writer::end_tag("li");
-        $PAGE->requires->js_amd_inline("
-            require(['jquery', 'core/moremenu'], function($, MenuMore) {
-                $(document).ready(function() {
-                    var moremenu = document.querySelector('.secondary-navigation ul.nav-tabs .dropdownmoremenu ul');
-                    // Added the manage skills on the module page.
-                    if (moremenu) {
-                        $(moremenu).append('$content');
-                    }
-                });
-            });
-        ");
-    }
 }
 
 /**
@@ -95,7 +68,7 @@ function tool_skills_extend_navigation_course(navigation_node $navigation, stdCl
  * @return bool
  */
 function tool_skills_myprofile_navigation(tree $tree, $user, $iscurrentuser, $course) {
-    global $USER;
+    global $USER, $DB;
 
     // Get the learningtools category.
     if (!array_key_exists('toolskills', $tree->__get('categories'))) {
@@ -128,7 +101,6 @@ function tool_skills_myprofile_navigation(tree $tree, $user, $iscurrentuser, $co
         }
 
         foreach ($newskills as $skillid => $skills) {
-
             $skill = $skillslist[$skillid];
             $skillpoints = $skill->get_points_to_earnskill();
 
@@ -149,14 +121,8 @@ function tool_skills_myprofile_navigation(tree $tree, $user, $iscurrentuser, $co
                 $pointstoearn = $skillcourse->get_points_earned_fromcourse();
                 $courseurl = new moodle_url('/course/view.php', ['id' => $data->courseid]);
 
-                // Course module skill object.
-                //$modskill = $data->skillcoursemodule;
-                //$pointstoearnmod = $modskill->get_points_earned_fromcoursemodule();
-
                 // Points earned from this course.
                 $pointsfromcourse = $skillcourse->get_user_earned_points($USER->id);
-
-                //$pointsfromodule = $modskill->get_user_earned_points($USER->id);
 
                 $course = $data->skillcourse->get_course();
                 $li = html_writer::link($courseurl, format_string($course->fullname));
@@ -169,23 +135,48 @@ function tool_skills_myprofile_navigation(tree $tree, $user, $iscurrentuser, $co
 
                 $skillstr .= html_writer::tag('li', $li);
 
-                // $modpointstr = get_string('pointsforcompletion', 'tool_skills') . " : " . $pointstoearnmod;
-                // $modpointstr .= html_writer::tag('b',
-                //     " (".get_string('earned', 'tool_skills') . ": " .( $pointsfromodule ?? 0) . ")" );
-                // $modli = html_writer::tag('p', $modpointstr, ['class' => 'skills-points-'.$course->shortname]);
+                if (tool_skills_has_activityskills()) {
+                    $modskill = $data->activityskills;
 
-                // $skillstr .= html_writer::tag('li', $modli);
+                    foreach ($modskill as $modinstance => $moddata) {
 
+                        // Activity skills.
+                        $moduleskillsobj = new skilladdon_activityskills\moduleskills($moddata->courseid, $moddata->modid);
+                        $moduleskillsobj->set_skill_instance($moddata->id);
+                        $modpointstoearn = $moduleskillsobj->get_points_earned_from_course_module($moddata);
+
+                        // Course module URL.
+                        $cm = get_coursemodule_from_id(false, $moddata->modid);
+                        if ($DB->record_exists('course_modules', ['id' => $cm->id])) {
+                            $moduleurl = new moodle_url('/mod/'.$cm->modname.'/view.php', ['id' => $cm->id]);
+
+                            // Points earned from this course module.
+                            $pointsfromcoursemod = $moduleskillsobj->get_user_earned_activity_points($USER->id, $moddata);
+
+                            $li = html_writer::link($moduleurl, format_string($cm->name));
+
+                            $modulepointstr = get_string('pointsforcompletion', 'tool_skills') . " : " . $modpointstoearn;
+                            $modulepointstr .= html_writer::tag('b',
+                                " (".get_string('earned', 'tool_skills') . ": " .( $pointsfromcoursemod ?? 0) . ")" );
+
+                            $li .= html_writer::tag('p', $modulepointstr, ['class' => 'skills-points-'.$cm->name]);
+
+                            $skillstr .= html_writer::tag('li', $li);
+                        }
+                    }
+
+                }
             }
 
             $skillstr .= html_writer::end_tag('ul'); // End the skill list.
 
-            $report = new \moodle_url('/admin/tool/skills/manage/usersreport.php', ['id' => $skillid]);
-            $skillstr .= html_writer::link($report, get_string('usersreport', 'tool_skills'));
+            if (has_capability('tool/skills:viewotherspoints', $systemcontext)) {
+                $report = new \moodle_url('/admin/tool/skills/manage/usersreport.php', ['id' => $skillid]);
+                $skillstr .= html_writer::link($report, get_string('usersreport', 'tool_skills'));
+            }
 
             $coursenode = new core_user\output\myprofile\node('toolskills', "skill_".$skill->get_data()->id,
-                '', null, null, $skillstr, null, 'toolskill-courses-points');
-
+                    '', null, null, $skillstr, null, 'toolskill-courses-points');
             $tree->add_node($coursenode);
         }
 
@@ -203,4 +194,17 @@ function tool_skills_get_fontawesome_icon_map() {
         'tool_skills:f/archive' => 'fa-archive',
         'tool_skills:f/active' => 'fa-undo',
     ];
+}
+
+/**
+ * Check the tool skills plugin has installed a subplugin of activity skills.
+ *
+ * @return bool
+ */
+function tool_skills_has_activityskills() {
+    $skilladdon = \core_plugin_manager::instance()->get_subplugins_of_plugin('tool_skills');
+    if (in_array('skilladdon_activityskills', array_keys($skilladdon))) {
+        return true;
+    }
+    return false;
 }

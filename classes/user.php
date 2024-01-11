@@ -98,7 +98,7 @@ class user {
      * @return array
      */
     public function get_user_skills() {
-        global $DB;
+        global $DB, $CFG;
 
         // Fetch the list of user enrolled courses.
         $courses = enrol_get_users_courses($this->userid, true, 'id');
@@ -116,7 +116,7 @@ class user {
             FROM {tool_skills_courses} tscs
             JOIN {tool_skills} ts ON ts.id = tscs.skill
             LEFT JOIN {tool_skills_userpoints} up ON up.skill = ts.id AND up.userid = :userid
-            WHERE tscs.status = :enabled AND tscs.courseid $insql";
+            WHERE tscs.status = :enabled AND ts.status = 1 AND ts.archived = 0 AND tscs.courseid $insql";
 
         $list = $DB->get_records_sql($sql, ['userid' => $this->userid, 'enabled' => 1] + $inparams);
 
@@ -128,6 +128,13 @@ class user {
             // Skill courses.
             $point->skillcourse = courseskills::get($point->courseid);
             $point->skillcourse->set_skill_instance($point->id);
+
+            if (tool_skills_has_activityskills()) {
+                // Activity skills data.
+                $point->activityskills = $DB->get_records('tool_skills_course_activity', [
+                    'skill' => $point->skill, 'courseid' => $point->courseid,
+                ]);
+            }
 
             $point->userpoints = $DB->get_record('tool_skills_userpoints', ['skill' => $point->skill, 'userid' => $this->userid]);
             // Skill levels.

@@ -24,9 +24,13 @@
 
 namespace tool_skills;
 
+defined('MOODLE_INTERNAL') || die();
+
 use completion_info;
 use moodle_exception;
 use stdClass;
+
+require_once($CFG->dirroot.'/admin/tool/skills/lib.php');
 
 /**
  * Manage the skills for courses. Trigger skills to assign point for users.
@@ -116,6 +120,9 @@ class courseskills extends \tool_skills\allocation_method {
 
         $DB->delete_records('tool_skills_courses', ['courseid' => $this->courseid]);
 
+        if (tool_skills_has_activityskills()) {
+            $DB->delete_records('tool_skills_course_activity', ['courseid' => $this->courseid]);
+        }
         $this->get_logs()->delete_method_log($this->courseid, 'course');
     }
 
@@ -194,7 +201,7 @@ class courseskills extends \tool_skills\allocation_method {
      * @return void
      */
     public function manage_course_completions(int $userid) {
-        global $CFG;
+        global $CFG, $DB;
 
         require_once($CFG->dirroot . '/lib/completionlib.php');
 
@@ -205,9 +212,32 @@ class courseskills extends \tool_skills\allocation_method {
             // Get course skills records.
             $skills = $this->get_instance_skills();
             foreach ($skills as $skillcourseid => $skill) {
+
                 // Create a skill course record instance for this skill.
                 $this->set_skill_instance($skillcourseid);
-                $skill->assign_skills($this, $userid);
+                // Get the data.
+                $csdata = $this->build_data();
+
+                // Start the database transaction.
+                $transaction = $DB->start_delegated_transaction();
+
+                switch ($csdata->uponcompletion) {
+
+                    case skills::COMPLETIONFORCELEVEL:
+                        $skill->force_level($this, $csdata->level, $userid);
+                        break;
+
+                    case skills::COMPLETIONSETLEVEL:
+                        $skill->moveto_level($this, $csdata->level, $userid);
+                        break;
+
+                    case skills::COMPLETIONPOINTS:
+                        $skill->increase_points($this, $csdata->points, $userid);
+                        break;
+                }
+
+                // End the database transaction.
+                $transaction->allow_commit();
             }
         }
     }

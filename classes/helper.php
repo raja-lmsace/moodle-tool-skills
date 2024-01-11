@@ -49,7 +49,7 @@ class helper {
         if (has_capability('tool/skills:manage', $PAGE->context)) {
             // Setup create template button on page.
             $caption = get_string('createskill', 'tool_skills');
-            $editurl = new \moodle_url('/admin/tool/skills/manage/edit.php', array('sesskey' => sesskey()));
+            $editurl = new \moodle_url('/admin/tool/skills/manage/edit.php', ['sesskey' => sesskey()]);
 
             // IN Moodle 4.2, primary button param depreceted.
             $primary = defined('single_button::BUTTON_PRIMARY') ? single_button::BUTTON_PRIMARY : true;
@@ -61,13 +61,29 @@ class helper {
         $button .= \html_writer::start_div('filter-form-container');
         $button .= \html_writer::link('javascript:void(0)', $OUTPUT->pix_icon('i/filter', 'Filter'), [
             'id' => 'tool-skills-filter',
-            'class' => 'sort-toolskills btn btn-primary ml-2 ' . ($filtered ? 'filtered' : '')
+            'class' => 'sort-toolskills btn btn-primary ml-2 ' . ($filtered ? 'filtered' : ''),
         ]);
         $filter = new \tool_skills_table_filter(null, ['t' => $tab]);
         $button .= \html_writer::tag('div', $filter->render(), ['id' => 'tool-skills-filterform', 'class' => 'hide']);
         $button .= \html_writer::end_div();
 
         return $button;
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @return void
+     */
+    public static function get_skills_list() {
+        global $DB;
+        // List of skills available.
+        $skills = $DB->get_records('tool_skills', []);
+        array_walk($skills, function(&$skill) {
+            $skill = new skills($skill->id);
+        });
+
+        return $skills;
     }
 
 }

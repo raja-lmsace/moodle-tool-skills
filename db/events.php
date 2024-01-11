@@ -26,27 +26,18 @@ defined('MOODLE_INTERNAL') || die();
 
 $observers = [
 
-    array(
+    [
         'eventname' => 'core\event\course_completed',
         'callback' => '\tool_skills\events\observer::course_completed',
-    ),
+    ],
 
-    array(
+    [
         'eventname' => 'core\event\course_deleted',
         'callback' => '\tool_skills\events\observer::course_deleted',
-    ),
+    ],
 
-    array(
+    [
         'eventname' => 'core\event\user_deleted',
         'callback' => '\tool_skills\events\observer::user_deleted',
-    ),
-
-    array(
-        'eventname' => 'core\event\course_module_completion_updated',
-        'callback' => '\tool_skills\events\observer::course_module_completed',
-    ),
-    array(
-        'eventname' => 'core\event\course_module_deleted',
-        'callback' => '\tool_skills\events\observer::course_module_deleted',
-    ),
+    ],
 ];

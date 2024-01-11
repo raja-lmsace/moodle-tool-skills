@@ -24,10 +24,16 @@
 
 namespace tool_skills;
 
+defined('MOODLE_INTERNAL') || die();
+
 use moodle_exception;
 use stdClass;
 use context_system;
 use tool_skills\allocation_method;
+
+require_once($CFG->dirroot.'/grade/lib.php');
+require_once($CFG->dirroot.'/grade/querylib.php');
+require_once($CFG->dirroot.'/admin/tool/skills/lib.php');
 
 /**
  * Skills manage instance, doing manage of skills tasks.
@@ -245,7 +251,11 @@ class skills {
             // Delete all its actions.
             \tool_skills\courseskills::remove_skills($this->skillid);
 
-            \tool_skills\moduleskills::remove_skills($this->skillid);
+            if (tool_skills_has_activityskills()) {
+                \skilladdon_activityskills\moduleskills::remove_skills($this->skillid);
+            }
+
+            $DB->delete_records('tool_skills_userpoints', ['skill' => $this->skillid]);
 
             return true;
         }
@@ -294,11 +304,11 @@ class skills {
      */
     public function get_points_to_earnskill() {
 
-        $levels = $this->get_levels();
+        $levels = $this->get_levels(); // List of levels, available in the skill.
 
         $pointstocomplete = 0;
         foreach ($levels as $levelid => $level) {
-            $pointstocomplete += $level->points;
+            $pointstocomplete += $level->points; // Increase the level points to find the max skill point.
         }
 
         return $pointstocomplete;
@@ -341,76 +351,6 @@ class skills {
     }
 
     /**
-     * Assign the skills to users.
-     *
-     * @param \tool_skills\allocation_method $skillobj
-     * @param int $userid
-     *
-     * @return void
-     */
-    public function assign_skills($skillobj, int $userid) {
-        global $DB;
-
-        $csdata = $skillobj->get_data();
-        // Start the database transaction.
-        $transaction = $DB->start_delegated_transaction();
-
-        switch ($csdata->uponcompletion) {
-
-            case self::COMPLETIONFORCELEVEL:
-                $this->force_level($skillobj, $csdata->level, $userid);
-                break;
-
-            case self::COMPLETIONSETLEVEL:
-                $this->moveto_level($skillobj, $csdata->level, $userid);
-                break;
-
-            case self::COMPLETIONPOINTS:
-                $this->increase_points($skillobj, $csdata->points, $userid);
-                break;
-        }
-        $transaction->allow_commit();
-    }
-
-    /**
-     * Assign the module skills to users.
-     *
-     * @param \tool_skills\allocation_method $modskillsobj
-     * @param int $userid
-     *
-     * @return void
-     */
-    public function assign_mod_skills($modskillsobj, int $userid) {
-        global $DB;
-
-        $moduledata = $modskillsobj->get_data();
-
-        // Start the database transaction.
-        $transaction = $DB->start_delegated_transaction();
-
-        switch ($moduledata->uponmodcompletion) {
-
-            case self::COMPLETIONFORCELEVEL:
-                $this->force_level($modskillsobj, $moduledata->level, $userid);
-                break;
-
-            case self::COMPLETIONSETLEVEL:
-                $this->moveto_level($modskillsobj, $moduledata->level, $userid);
-                break;
-
-            case self::COMPLETIONPOINTS:
-                $this->increase_points($modskillsobj, $moduledata->points, $userid);
-                break;
-
-            case self::COMPLETIONPOINTSGRADE:
-                $this->get_activity_grade_points($modskillsobj, $userid, $moduledata->modid);
-                break;
-        }
-
-        $transaction->allow_commit();
-    }
-
-    /**
      * Fetch the user skill points table record.
      *
      * @param int $userid
@@ -432,6 +372,7 @@ class skills {
             $record['timecreated'] = time();
 
             $DB->insert_record('tool_skills_userpoints', $record);
+
             return $this->get_user_skill($userid, false); // Don't need to create again.
         }
 
@@ -441,13 +382,13 @@ class skills {
     /**
      * Force user points to match this level.
      *
-     * @param allocation_method $skillobj
+     * @param stdclass $skillobj
      * @param int $levelid
      * @param int $userid
      *
      * @return void
      */
-    protected function force_level(allocation_method $skillobj, int $levelid, int $userid) {
+    public function force_level($skillobj, int $levelid, int $userid) {
 
         // Fetch the level instance for this level.
         $level = level::get($levelid);
@@ -461,13 +402,13 @@ class skills {
     /**
      * Increase the user points to complete this level.
      *
-     * @param allocation_method $skillobj
+     * @param stdclass $skillobj
      * @param int $levelid
      * @param int $userid
      *
      * @return void
      */
-    protected function moveto_level(allocation_method $skillobj, int $levelid, int $userid) {
+    public function moveto_level($skillobj, int $levelid, int $userid) {
         // User skill.
         $userskill = $this->get_user_skill($userid);
         // Fetch the level instance for this level.
@@ -486,19 +427,17 @@ class skills {
     /**
      * Increase the points.
      *
-     * @param allocation_method $skillobj
+     * @param stdclass $skillobj
      * @param int $points
      * @param int $userid
      *
      * @return void
      */
-    protected function increase_points(allocation_method $skillobj, int $points, int $userid) {
+    public function increase_points($skillobj, int $points, int $userid) {
         // Get user skill current record, create new one if not found.
         $userskill = $this->get_user_skill($userid);
         // Increase the allocated points with current user points.
         $levelpoints = $userskill->points + $points;
-        // Find the method of the course skills.
-        $method = ($skillobj instanceof \tool_skills\courseskills) ? 'course' : 'activity';
 
         // Update the new points for this user in db.
         $this->set_userskill_points($userid, $levelpoints);
@@ -514,7 +453,7 @@ class skills {
      * @param int $points
      * @return int
      */
-    protected function set_userskill_points(int $userid, int $points) : int {
+    public function set_userskill_points(int $userid, int $points) : int {
         global $DB;
 
         $record = ['skill' => $this->skillid, 'userid' => $userid];
@@ -522,6 +461,7 @@ class skills {
         if ($data = $DB->get_record('tool_skills_userpoints', $record)) {
             $id = $data->id;
             $data->points = $points;
+            $data->timemodified = time();
 
             $DB->update_record('tool_skills_userpoints', $data);
 
@@ -538,20 +478,50 @@ class skills {
     /**
      * Create a log for the user point allocation.
      *
-     * @param allocation_method $skillobj
+     * @param stdclass $skillobj
      * @param int $userid
      * @param int $points
      * @return void
      */
-    protected function create_user_point_award(allocation_method $skillobj, int $userid, int $points) {
+    public function create_user_point_award($skillobj, int $userid, int $points) {
+
         // Find the method of the course skills.
-        $method = ($skillobj instanceof \tool_skills\courseskills) ? 'course' : 'activity';
+        if ($skillobj instanceof \tool_skills\courseskills) {
+            $method = 'course';
+        } else if ($skillobj instanceof \skilladdon_activityskills\moduleskills) {
+            $method = 'activity';
+        } else {
+            $method = '';
+        }
 
         // Allocation method id.
         $methodid = $skillobj->get_data()->id;
 
         // Log the point awarded to users and the method.
-        $this->log->add($userid, $points, $methodid, $method);
+        $this->log->add($this->skillid, $userid, $points, $methodid, $method);
+    }
+
+    /**
+     * Get the list of proficient users in this skill.
+     *
+     * @return array
+     */
+    public function get_proficient() {
+        global $DB;
+
+        // Points to earn this skill.
+        $proficientpoint = $this->get_points_to_earnskill();
+        // User points.
+        $userpoints = $DB->get_records('tool_skills_userpoints', ['skill' => $this->skillid]);
+        $list = [];
+        foreach ($userpoints as $id => $points) {
+            // Verify the user is reached the maximum points for the level.
+            if ($points->points >= $proficientpoint) {
+                $list[] = $points->userid; // This user is proficient in this skill.
+            }
+        }
+        // Return the list of proficient users id.
+        return $list;
     }
 
     /**
@@ -632,13 +602,18 @@ class skills {
     /**
      * Get the grade points form the activity.
      *
-     * @param allocation_method $skillobj
+     * @param stdclass $skillobj
      * @param int $userid userid
      * @param int $cmid course module id.
      * @return void
      */
-    public function get_activity_grade_points(allocation_method $skillobj, int $userid, int $cmid) {
-        $gradepoints = \tool_skills\moduleskills::get_grade_point($cmid, $userid);
-        $this->increase_points($skillobj, $gradepoints, $userid);
+    public function get_activity_grade_points($skillobj, int $userid, int $cmid) {
+        if (tool_skills_has_activityskills()) {
+            $gradepoints = \skilladdon_activityskills\moduleskills::get_grade_point($cmid, $userid);
+            $this->increase_points($skillobj, $gradepoints, $userid);
+        }
     }
+
+
+
 }
