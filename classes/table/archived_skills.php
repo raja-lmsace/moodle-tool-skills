@@ -75,6 +75,7 @@ class archived_skills extends \table_sql {
         global $DB;
 
         $condition = 'archived = 1';
+
         // Filter the category.
         if ($this->filterset->has_filter('category')) {
             $values = $this->filterset->get_filter('category')->get_filter_values();
@@ -90,16 +91,6 @@ class archived_skills extends \table_sql {
     }
 
     /**
-     * Name of the skill column. Format the string to support multilingual.
-     *
-     * @param stdClass $row
-     * @return string
-     */
-    public function col_name(stdClass $row) : string {
-        return format_string($row->name);
-    }
-
-    /**
      * Description of the skill.
      *
      * @param stdClass $row
@@ -107,6 +98,16 @@ class archived_skills extends \table_sql {
      */
     public function col_description(stdClass $row) : string {
         return format_text($row->description, FORMAT_HTML, ['overflow' => false]);
+    }
+
+     /**
+     * Name of the skill column. Format the string to support multilingual.
+     *
+     * @param stdClass $row
+     * @return string
+     */
+    public function col_name(stdClass $row) : string {
+        return format_string($row->name);
     }
 
     /**
