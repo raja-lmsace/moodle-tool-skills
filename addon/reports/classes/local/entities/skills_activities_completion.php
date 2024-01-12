@@ -15,13 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Pulse notification entities for report builder.
+ * Skills activities completion data entities for report builder.
  *
  * @package   skilladdon_reports
  * @copyright 2023, bdecent gmbh bdecent.de
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace skilladdon_reports\local\entities;
+
+// Prevent direct access.
+defined('MOODLE_INTERNAL') || die();
 
 use core_reportbuilder\local\entities\base;
 use core_reportbuilder\local\report\{column, filter};
@@ -32,7 +35,7 @@ use lang_string;
 require_once($CFG->dirroot.'/lib/gradelib.php');
 
 /**
- * Pulse notification entity base for report source.
+ * Skills activities completion data entity base for report source.
  */
 class skills_activities_completion extends base {
 
@@ -65,7 +68,7 @@ class skills_activities_completion extends base {
     }
 
     /**
-     * Initialise the notification datasource columns and filter, conditions.
+     * Initialise the entity columns and filter, conditions.
      *
      * @return base
      */
@@ -89,31 +92,19 @@ class skills_activities_completion extends base {
     }
 
     /**
-     * List of columns available for this notfication datasource.
+     * List of columns available for this datasource.
      *
      * @return array
      */
     protected function get_all_columns(): array {
+
         $columns = [];
-        $this->include_skills_columns($columns);
-        return $columns;
-    }
 
-    /**
-     * Undocumented function
-     *
-     * @param [type] $columns
-     * @return void
-     */
-    protected function include_skills_columns(&$columns) {
-
-        // $skillalias = $this->get_table_alias('tool_skills');
-        // $skillcoursealias = $this->get_table_alias('tool_skills_courses');
+        // Table alias used in fields.
         $userpoints = $this->get_table_alias('tool_skills_userpoints');
         $skillmodsalias = $this->get_table_alias('tool_skills_course_activity');
-        // $levelalias = $this->get_table_alias('tool_skills_levels');
 
-        // Mod completion status
+        // Mod completion status.
         $columns[] = (new column(
             'modcompletionstatus',
             new lang_string('modcompletionstatus', 'tool_skills'),
@@ -121,10 +112,11 @@ class skills_activities_completion extends base {
         ))
         ->set_is_sortable(true)
         ->add_joins($this->get_joins())
-        ->add_field("{$skillmodsalias}.modid")
-        ->add_field("{$skillmodsalias}.courseid")
+        ->add_field("{$skillmodsalias}.modid") // Cmid.
+        ->add_field("{$skillmodsalias}.courseid") // Course id.
         ->add_field("{$userpoints}.userid")
-        ->add_join("LEFT JOIN {course_modules_completion} cmc ON cmc.userid = {$userpoints}.userid AND cmc.coursemoduleid = {$skillmodsalias}.modid ")
+        ->add_join("LEFT JOIN {course_modules_completion} cmc
+            ON cmc.userid = {$userpoints}.userid AND cmc.coursemoduleid = {$skillmodsalias}.modid ")
         ->add_field("cmc.completionstate")
         ->add_callback(static function ($value, $row): string {
 
@@ -148,7 +140,7 @@ class skills_activities_completion extends base {
             return '';
         });
 
-         // Grade.
+        // Grade.
         $columns[] = (new column(
             'modgrade',
             new lang_string('grade'),
@@ -156,13 +148,12 @@ class skills_activities_completion extends base {
         ))
         ->set_is_sortable(true)
         ->add_joins($this->get_joins())
-        ->add_field("{$skillmodsalias}.modid")
+        ->add_field("{$skillmodsalias}.modid") // Course module id (cmid).
         ->add_field("{$skillmodsalias}.courseid")
         ->add_field("{$userpoints}.userid")
-        ->add_join("JOIN {course_modules} cmod ON cmod.id = {$skillmodsalias}.modid")
-        ->add_join("JOIN {modules} m ON m.id = cmod.module")
-        ->add_field("m.name")
+        ->add_field("m.name") // Module name "assign".
         ->add_callback(static function ($value, $row): string {
+            // Fetch the user grades for this module.
             $gradinginfo = grade_get_grades($row->courseid, 'mod', $row->name, $row->modid, array_keys([$row->userid]));
             $userfinalgrade = $gradinginfo->items[0]->grades[$row->userid];
             return $userfinalgrade ?: '-';
@@ -176,24 +167,14 @@ class skills_activities_completion extends base {
         ))
         ->set_is_sortable(true)
         ->add_joins($this->get_joins())
-        ->add_join("LEFT JOIN {course_modules_completion} cmc ON cmc.userid = {$userpoints}.userid AND cmc.coursemoduleid = {$skillmodsalias}.modid ")
+        ->add_join("LEFT JOIN {course_modules_completion} cmc
+            ON cmc.userid = {$userpoints}.userid AND cmc.coursemoduleid = {$skillmodsalias}.modid")
         ->add_field("cmc.timemodified")
         ->add_callback(static function ($value, $row): string {
             return $value ? userdate($value, get_string('strftimedatetime', 'langconfig')) : '-';
         });
 
+        return $columns;
+
     }
-
-    /**
-     * Defined filters for the notification entities.
-     *
-     * @return array
-     */
-    protected function get_all_filters(): array {
-        global $DB;
-
-        return [[], []];
-    }
-
-
 }

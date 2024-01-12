@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Pulse notification entities for report builder.
+ * Skills user points entities for report builder.
  *
  * @package   skilladdon_reports
  * @copyright 2023, bdecent gmbh bdecent.de
@@ -25,11 +25,13 @@ namespace skilladdon_reports\local\entities;
 
 use core_reportbuilder\local\entities\base;
 use core_reportbuilder\local\report\{column, filter};
-use core_reportbuilder\local\filters\{date, number, select, text};
+use core_reportbuilder\local\filters\{date, number, select, text, boolean_select};
 use lang_string;
+use core_cohort\reportbuilder\local\entities\cohort;
+use core_cohort\reportbuilder\local\entities\cohort_member;
 
 /**
- * Pulse notification entity base for report source.
+ * Skills user points entity base for report source.
  */
 class skills_user_stats extends base {
 
@@ -47,7 +49,7 @@ class skills_user_stats extends base {
             'tool_skills_userpoints' => 'skup',
             'tool_skills_levels_max' => 'sklm',
             'tool_skills_courses_count' => 'skcc',
-            'tool_skills_userpoints_count' => 'skupc'
+            'tool_skills_userpoints_count' => 'skupc',
         ];
     }
 
@@ -61,7 +63,7 @@ class skills_user_stats extends base {
     }
 
     /**
-     * Initialise the notification datasource columns and filter, conditions.
+     * Initialise the columns and filter, conditions.
      *
      * @return base
      */
@@ -85,7 +87,7 @@ class skills_user_stats extends base {
     }
 
     /**
-     * List of columns available for this notfication datasource.
+     * List of columns available for this user skills datasource.
      *
      * @return array
      */
@@ -93,9 +95,7 @@ class skills_user_stats extends base {
 
         $columns = [];
 
-        $skillalias = $this->get_table_alias('tool_skills');
         $userpoints = $this->get_table_alias('tool_skills_userpoints');
-        $skillcoursealias = $this->get_table_alias('tool_skills_userpoints');
 
         // Points user earned for this skill.
         $columns[] = (new column(
@@ -123,7 +123,7 @@ class skills_user_stats extends base {
             return $value ? userdate($value, get_string('strftimedatetime', 'langconfig')) : '-';
         });
 
-        // Proficients of the skill.
+        // Modified time of the user points.
         $columns[] = (new column(
             'userpointstimemodified',
             new lang_string('timemodified', 'tool_skills'),
@@ -141,14 +141,63 @@ class skills_user_stats extends base {
 
 
     /**
-     * Defined filters for the notification entities.
+     * Defined filters for the user skill points entities.
      *
      * @return array
      */
     protected function get_all_filters(): array {
-        global $DB;
+        global $USER, $DB;
 
-        return [[], []];
+        // Query to get the user list who are assigned for the current user.
+        $sql = "SELECT c.instanceid
+            FROM {role_assignments} ra, {context} c, {user} u
+            WHERE ra.userid = :userid AND ra.contextid = c.id AND c.instanceid = u.id AND c.contextlevel = " . CONTEXT_USER;
+        // Query for get the current user cohorts id list.
+        $cohortsql = "SELECT c.id FROM {cohort} c
+            JOIN {cohort_members} cm ON c.id = cm.cohortid WHERE cm.userid = :cohortuserid AND c.visible = 1";
+
+        // Mod type based filter.
+        $conditions[] = (new filter(
+            boolean_select::class,
+            'userid',
+            new lang_string('userid'),
+            $this->get_entity_name(),
+            "u.id IN ($sql)",
+            ['userid' => $USER->id]
+        ))
+        ->set_options([boolean_select::CHECKED => new lang_string('yes')])
+        ->add_joins($this->get_joins());
+
+        // Same cohort based filter.
+        // User points table alias.
+        $userpointalias = $this->get_table_alias('tool_skills_userpoints');
+        // Cohort memeber entity.
+        $cohortmementity = new cohort_member();
+        $cohortmementity = $cohortmementity->set_table_alias('cohort_members', 'chtm');
+        $cohortmemalias = $cohortmementity->get_table_alias('cohort_members');
+        // Cohort entity.
+        $cohortentity = new cohort();
+        $cohortentity = $cohortentity->set_table_alias('cohort', 'cht');
+        $cohortalias = $cohortentity->get_table_alias('cohort');
+
+        // Join query to join the user cohort.
+        $cohortjoin = "LEFT JOIN {cohort_members} {$cohortmemalias} ON {$cohortmemalias}.userid = {$userpointalias}.userid
+        LEFT JOIN {cohort} {$cohortalias} ON {$cohortalias}.id = {$cohortmemalias}.cohortid";
+
+        // Cohort condition.
+        $conditions[] = (new filter(
+            boolean_select::class,
+            'usercohort',
+            new lang_string('userid'),
+            $this->get_entity_name(),
+            "{$cohortalias}.id IN ($cohortsql)",
+            ['cohortuserid' => $USER->id]
+        ))
+        ->set_options([boolean_select::CHECKED => new lang_string('yes')])
+        ->add_joins($this->get_joins())
+        ->add_join($cohortjoin);
+
+        return [[], $conditions];
     }
 
 }

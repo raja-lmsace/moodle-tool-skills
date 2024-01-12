@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Pulse notification entities for report builder.
+ * Skills entity for report builder.
  *
  * @package   skilladdon_reports
  * @copyright 2023, bdecent gmbh bdecent.de
@@ -26,12 +26,10 @@ namespace skilladdon_reports\local\entities;
 use core_reportbuilder\local\entities\base;
 use core_reportbuilder\local\report\{column, filter};
 use core_reportbuilder\local\filters\{date, number, select, text};
-use core_reportbuilder\local\helpers\format;
-use html_writer;
 use lang_string;
 
 /**
- * Pulse notification entity base for report source.
+ * Skills entity base for report source.
  */
 class skills extends base {
 
@@ -52,7 +50,7 @@ class skills extends base {
             'tool_skills_userpoints' => 'skup',
             'tool_skills_levels_max' => 'sklm',
             'cohort_members' => 'skchtm',
-            'cohort' => 'skcht'
+            'cohort' => 'skcht',
         ];
     }
 
@@ -66,7 +64,7 @@ class skills extends base {
     }
 
     /**
-     * Initialise the notification datasource columns and filter, conditions.
+     * Initialise the skills datasource columns and filter, conditions.
      *
      * @return base
      */
@@ -90,20 +88,13 @@ class skills extends base {
     }
 
     /**
-     * List of columns available for this notfication datasource.
+     * List of columns available for this skills datasource.
      *
      * @return array
      */
     protected function get_all_columns(): array {
 
         $columns = [];
-        $this->include_skills_columns($columns);
-
-
-        return $columns;
-    }
-
-    protected function include_skills_columns(&$columns) {
 
         $skillsalias = $this->get_table_alias('tool_skills');
         $maxalias = $this->get_table_alias('tool_skills_levels_max');
@@ -163,7 +154,7 @@ class skills extends base {
         ->set_is_sortable(true)
         ->add_field("{$skillsalias}.color")
         ->add_callback(static function ($value, $row): string {
-            return $value.\html_writer::tag('span', '', ['class' => 'p-1', 'style' => 'background-color:'.$value]);
+            return $value.\html_writer::tag('span', ' ', ['class' => 'p-2', 'style' => 'background-color:'.$value]);
         });
 
         // Maximum point for the skill.
@@ -173,47 +164,61 @@ class skills extends base {
             $this->get_entity_name()
         ))
         ->set_is_sortable(true)
-        ->add_field("{$maxalias}.maxpoints")
-        /* ->add_callback(static function ($value, $row): string {
-            return \tool_skills\skills::get($value)->get_points_to_earnskill();
-        }) */;
+        ->add_field("{$maxalias}.maxpoints");
 
+        return $columns;
     }
 
     /**
-     * Defined filters for the notification entities.
+     * Defined filters for the skill entities.
      *
      * @return array
      */
     protected function get_all_filters(): array {
         global $DB;
 
-        return [[], []];
-    }
+        $skillsalias = $this->get_table_alias('tool_skills');
+        $maxalias = $this->get_table_alias('tool_skills_levels_max');
 
-    /**
-     * Schedule join sql.
-     *
-     * @return string
-     */
-    public function schedulejoin() {
+        // Name of the skill.
+        $filters[] = (new filter(
+            text::class,
+            'name',
+            new lang_string('name'),
+            $this->get_entity_name(),
+            "{$skillsalias}.name"
+        ));
 
-        // $notificationschalias = $this->get_table_alias('pulseaction_notification_sch');
+        // Identity key.
+        $filters[] = (new filter(
+            text::class,
+            'key',
+            new lang_string('identitykey', 'tool_skills'),
+            $this->get_entity_name(),
+            "{$skillsalias}.identitykey"
+        ));
 
-        // $autoinstancesalias = $this->get_table_alias('pulse_autoinstances');
-        // $autotemplatesalias = $this->get_table_alias('pulse_autotemplates');
-        // $autotemplatesinsalias = $this->get_table_alias('pulse_autotemplates_ins');
-        // $notificationinsalias = $this->get_table_alias('pulseaction_notification_ins');
-        // $notificationalias = $this->get_table_alias('pulseaction_notification');
+        // Status.
+        $filters[] = (new filter(
+            select::class,
+            'status',
+            new lang_string('status'),
+            $this->get_entity_name(),
+            "{$skillsalias}.status"
+        ))->set_options([
+            1 => get_string('enabled', 'tool_skills'),
+            0 => get_string('disabled', 'tool_skills'),
+        ]);
 
-        // return "
-        //     JOIN {pulse_autoinstances} {$autoinstancesalias} ON {$autoinstancesalias}.id = {$notificationschalias}.instanceid
-        //     JOIN {pulse_autotemplates} {$autotemplatesalias} ON {$autotemplatesalias}.id = {$autoinstancesalias}.templateid
-        //     JOIN {pulse_autotemplates_ins} {$autotemplatesinsalias}
-        //         ON {$autotemplatesinsalias}.instanceid = {$autoinstancesalias}.id
-        //     JOIN {pulseaction_notification_ins} {$notificationinsalias}
-        //         ON {$notificationinsalias}.instanceid = {$notificationschalias}.instanceid
-        //     JOIN {pulseaction_notification} {$notificationalias}
-        //         ON {$notificationalias}.templateid = {$autoinstancesalias}.templateid";
+        // Max points.
+        $filters[] = (new filter(
+            number::class,
+            'maximum',
+            new lang_string('maximum', 'tool_skills'),
+            $this->get_entity_name(),
+            "{$maxalias}.maxpoints"
+        ));
+
+        return [$filters, $filters];
     }
 }

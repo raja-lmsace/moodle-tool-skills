@@ -330,7 +330,7 @@ Feature: Allocate points to users, need to manage levels and assign skills to co
     And I follow "View all submissions"
     And I click on "Grade" "link" in the "Student First" "table_row"
     When I set the following fields to these values:
-      | Grade out of 100  | 60                     |
+      | Grade out of 100  | 60 |
     And I press "Save changes"
     And I should see "Graded"
     And I log out
@@ -340,9 +340,9 @@ Feature: Allocate points to users, need to manage levels and assign skills to co
     And I should see "Earned: 60"
     And I wait "10" seconds
 
-  #6. Calculate the average points for 3 different  skill in a single activity
+  #6. Calculate the average points for 3 different skill in a single activity
   @javascript
-  Scenario: Calculate the average points for 3 different  skill in a single activity
+  Scenario: Calculate the average points for 3 different skill in a single activity
     Given I am on the "Test page1" "page activity" page
     And I click on "More" "link" in the ".secondary-navigation" "css_element"
     And I click on "Manage skills" "link"
@@ -350,7 +350,7 @@ Feature: Allocate points to users, need to manage levels and assign skills to co
     And I click on ".skill-course-actions .action-edit" "css_element" in the "begineer" "table_row"
     And I set the following fields to these values:
       | Upon activity completion | Points |
-      | Points                   | 5     |
+      | Points                   | 5      |
     And I press "Save changes"
     Then I should see "Points - 5" in the "begineer" "table_row"
     And I am on the "Test page2" "page activity" page
@@ -388,14 +388,14 @@ Feature: Allocate points to users, need to manage levels and assign skills to co
     And I am on the "student1" "user > profile" page
     Then I should see "Skills earned"
     And I should see "Earned: 5"
+    And I am on the "Test page2" "page activity" page
+    And I press "Mark as done"
+    And I wait until "Done" "button" exists
+    And I am on the "student1" "user > profile" page
+    Then I should see "Earned: 30"
     And I am on the "Test page4" "page activity" page
     And I press "Mark as done"
     And I wait until "Done" "button" exists
     And I am on the "student1" "user > profile" page
     Then I should see "Earned: 10"
-    And I am on the "Test page2" "page activity" page
-    And I press "Mark as done"
-    And I wait until "Done" "button" exists
-    And I am on the "student1" "user > profile" page
-    Then I should see "Earned: 10"
-    And I wait "30" seconds
+    And I wait "10" seconds

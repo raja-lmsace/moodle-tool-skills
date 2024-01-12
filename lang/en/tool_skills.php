@@ -156,7 +156,6 @@ $string['skillproficients'] = 'Users that are proficient in this skill';
 $string['userskillentity'] = 'User skill';
 $string['timemodified'] = 'Time modified';
 $string['activitiesentity'] = 'Activities';
-$string['uponmodcompletion'] = 'Upon completion';
 $string['modname'] = 'Mod name';
 $string['modcompletionstatus'] = 'Completion status';
 
@@ -173,6 +172,3 @@ $string['coursecount'] = 'Number of courses';
 $string['categoryvisiblity'] = 'Category visibility';
 $string['depth'] = 'Depth';
 $string['path'] = 'Category path';
-
-// $string['userpointsimecreated'] = 'User point created time';
-// $string['userpointstimemodified'] = 'User';

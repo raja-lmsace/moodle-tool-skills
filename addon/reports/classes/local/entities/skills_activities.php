@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Pulse notification entities for report builder.
+ * Skills activities entity for report builder.
  *
  * @package   skilladdon_reports
  * @copyright 2023, bdecent gmbh bdecent.de
@@ -31,7 +31,7 @@ use html_writer;
 use lang_string;
 
 /**
- * Pulse notification entity base for report source.
+ * Skills activities entity base for report source.
  */
 class skills_activities extends base {
 
@@ -64,7 +64,7 @@ class skills_activities extends base {
     }
 
     /**
-     * Initialise the notification datasource columns and filter, conditions.
+     * Initialise the activity entity columns and filter, conditions.
      *
      * @return base
      */
@@ -95,18 +95,6 @@ class skills_activities extends base {
      */
     protected function get_all_columns(): array {
         $columns = [];
-        $this->include_skills_columns($columns);
-
-        return $columns;
-    }
-
-    /**
-     * Undocumented function
-     *
-     * @param [type] $columns
-     * @return void
-     */
-    protected function include_skills_columns(&$columns) {
 
         $skillalias = $this->get_table_alias('tool_skills');
         $skillcoursealias = $this->get_table_alias('tool_skills_courses');
@@ -114,7 +102,7 @@ class skills_activities extends base {
         $skillmodsalias = $this->get_table_alias('tool_skills_course_activity');
         $levelalias = $this->get_table_alias('tool_skills_levels');
 
-        // Name of the skill.
+        // Name of the activity.
         $columns[] = (new column(
             'activityname',
             new lang_string('activityname', 'tool_skills'),
@@ -128,7 +116,7 @@ class skills_activities extends base {
             return $mod->name ?? '';
         });
 
-        // Key of the skill.
+        // Module name.
         $columns[] = (new column(
             'modname',
             new lang_string('modname', 'tool_skills'),
@@ -136,12 +124,12 @@ class skills_activities extends base {
         ))
         ->set_is_sortable(true)
         ->add_joins($this->get_joins())
-        ->add_field("{$skillmodsalias}.modid")
+        ->add_field("m.name")
         ->add_callback(static function ($value, $row): string {
-            return get_coursemodule_from_id('', $value)->modname ?: '';
+            return ucfirst($value);
         });
 
-        // Proficients of the skill.
+        // Activity description.
         $columns[] = (new column(
             'activitydescription',
             new lang_string('description', 'tool_skills'),
@@ -192,7 +180,7 @@ class skills_activities extends base {
             return format_string($value);
         });
 
-        // Upon completion of module.
+        // Last modified time of the activity points.
         $columns[] = (new column(
             'modstimemodified',
             new lang_string('timemodified', 'tool_skills'),
@@ -205,18 +193,78 @@ class skills_activities extends base {
             return $value ? userdate($value, get_string('strftimedatetime', 'langconfig')) : '-';
         });
 
-
+        return $columns;
     }
 
     /**
-     * Defined filters for the notification entities.
+     * Defined filters for the activities entities.
      *
      * @return array
      */
     protected function get_all_filters(): array {
         global $DB;
 
-        return [[], []];
-    }
+        $skillmodsalias = $this->get_table_alias('tool_skills_course_activity');
+        $levelalias = $this->get_table_alias('tool_skills_levels');
 
+        // Mod type based filter.
+        $filters[] = (new filter(
+            select::class,
+            'modname',
+            new lang_string('modname', 'tool_skills'),
+            $this->get_entity_name(),
+            "m.id"
+        ))
+        ->add_joins($this->get_joins())
+        ->set_options_callback(static function() {
+            global $DB;
+            return $DB->get_records_menu('modules', [], '', 'id, name AS name');
+        });
+
+        // Upon completion of module.
+        $filters[] = (new filter(
+            select::class,
+            'uponmodcompletion',
+            new lang_string('uponmodcompletion', 'tool_skills'),
+            $this->get_entity_name(),
+            "{$skillmodsalias}.uponmodcompletion"
+        ))
+        ->add_joins($this->get_joins())
+        ->set_options_callback(static function() {
+            return \skilladdon_activityskills\form\course_mod_form::get_uponcompletion_options();
+        });
+
+        // Points earned for the completion of mods.
+        $filters[] = (new filter(
+            select::class,
+            'modpoints',
+            new lang_string('completionpoints', 'tool_skills'),
+            $this->get_entity_name(),
+            "{$skillmodsalias}.points"
+        ))
+        ->add_joins($this->get_joins());
+
+        // Mod configured to reach the level.
+        $filters[] = (new filter(
+            text::class,
+            'activitylevel',
+            new lang_string('completionlevel', 'tool_skills'),
+            $this->get_entity_name(),
+            "{$levelalias}.name"
+        ))
+        ->add_joins($this->get_joins())
+        ->add_join("LEFT JOIN {tool_skills_levels} {$levelalias} ON {$levelalias}.id = {$skillmodsalias}.level");
+
+        // Upon completion of module.
+        $filters[] = (new filter(
+            date::class,
+            'modstimemodified',
+            new lang_string('timemodified', 'tool_skills'),
+            $this->get_entity_name(),
+            "{$skillmodsalias}.timemodified"
+        ))
+        ->add_joins($this->get_joins());
+
+        return [$filters, []];
+    }
 }

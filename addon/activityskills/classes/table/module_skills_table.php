@@ -158,7 +158,7 @@ class module_skills_table extends \table_sql {
                 break;
 
             case skills::COMPLETIONPOINTSGRADE:
-                return get_string('completionpointsgrade', 'skilladdon_activityskills');
+                return get_string('completionpointsgrade', 'tool_skills');
                 break;
 
             case skills::COMPLETIONSETLEVEL:

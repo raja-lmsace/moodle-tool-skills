@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Pulse notification entities for report builder.
+ * Skills statistics entities for report builder.
  *
  * @package   skilladdon_reports
  * @copyright 2023, bdecent gmbh bdecent.de
@@ -26,12 +26,10 @@ namespace skilladdon_reports\local\entities;
 use core_reportbuilder\local\entities\base;
 use core_reportbuilder\local\report\{column, filter};
 use core_reportbuilder\local\filters\{date, number, select, text};
-use core_reportbuilder\local\helpers\format;
-use html_writer;
 use lang_string;
 
 /**
- * Pulse notification entity base for report source.
+ * Skills statistics entity base for report source.
  */
 class skills_stats extends base {
 
@@ -49,7 +47,7 @@ class skills_stats extends base {
             'tool_skills_userpoints' => 'skup',
             'tool_skills_levels_max' => 'sklm',
             'tool_skills_courses_count' => 'skcc',
-            'tool_skills_userpoints_count' => 'skupc'
+            'tool_skills_userpoints_count' => 'skupc',
         ];
     }
 
@@ -63,7 +61,7 @@ class skills_stats extends base {
     }
 
     /**
-     * Initialise the notification datasource columns and filter, conditions.
+     * Initialise the skills statistics datasource columns and filter, conditions.
      *
      * @return base
      */
@@ -87,32 +85,20 @@ class skills_stats extends base {
     }
 
     /**
-     * List of columns available for this notfication datasource.
+     * List of columns available for this skills statistics datasource.
      *
      * @return array
      */
     protected function get_all_columns(): array {
 
         $columns = [];
-        $this->include_skills_columns($columns);
 
-
-        return $columns;
-    }
-
-    /**
-     * Undocumented function
-     *
-     * @param [type] $columns
-     * @return void
-     */
-    protected function include_skills_columns(&$columns) {
-
+        // List of table alias used.
         $skillalias = $this->get_table_alias('tool_skills');
         $skillcoursealias = $this->get_table_alias('tool_skills_courses_count');
         $userpoints = $this->get_table_alias('tool_skills_userpoints_count');
 
-        // Name of the skill.
+        // Number of the courses uses the skill.
         $columns[] = (new column(
             'coursescount',
             new lang_string('coursesused', 'tool_skills'),
@@ -124,7 +110,7 @@ class skills_stats extends base {
             return $value ?: 0;
         });
 
-        // Key of the skill.
+        // Number of the users get any points for the skill.
         $columns[] = (new column(
             'userscount',
             new lang_string('skillusers', 'tool_skills'),
@@ -136,7 +122,7 @@ class skills_stats extends base {
             return $value ?: 0;
         });
 
-        // Proficients of the skill.
+        // Number of users proficients in the skill.
         $columns[] = (new column(
             'proficientusers',
             new lang_string('skillproficients', 'tool_skills'),
@@ -149,21 +135,12 @@ class skills_stats extends base {
             return !empty($userslist) ? count($userslist) : 0;
         });
 
+        return $columns;
+
     }
 
     /**
-     * Defined filters for the notification entities.
-     *
-     * @return array
-     */
-    protected function get_all_filters(): array {
-        global $DB;
-
-        return [[], []];
-    }
-
-    /**
-     * Schedule join sql.
+     * Skills stats join sql.
      *
      * @return string
      */
@@ -174,13 +151,11 @@ class skills_stats extends base {
 
         $skillalias = $this->get_table_alias('tool_skills');
 
-        return " LEFT JOIN (
+        return "LEFT JOIN (
                 SELECT skill, count(*) as coursescount FROM {tool_skills_courses} tsc GROUP BY tsc.skill
             ) {$coursecountalias} ON {$coursecountalias}.skill = {$skillalias}.id
             LEFT JOIN (
                 SELECT skill, count(*) as userscount FROM {tool_skills_userpoints} tsc GROUP BY tsc.skill
-            ) {$userpointsalias} ON {$userpointsalias}.skill = {$skillalias}.id
-            ";
-
+            ) {$userpointsalias} ON {$userpointsalias}.skill = {$skillalias}.id";
     }
 }
