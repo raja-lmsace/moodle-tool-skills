@@ -165,16 +165,3 @@ function tool_skills_get_fontawesome_icon_map() {
         'tool_skills:f/active' => 'fa-undo',
     ];
 }
-
-/**
- * Check the tool skills plugin has installed a subplugin of activity skills.
- *
- * @return bool
- */
-function tool_skills_has_activityskills() {
-    $skilladdon = \core_plugin_manager::instance()->get_subplugins_of_plugin('tool_skills');
-    if (in_array('skilladdon_activityskills', array_keys($skilladdon))) {
-        return true;
-    }
-    return false;
-}

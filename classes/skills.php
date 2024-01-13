@@ -486,10 +486,8 @@ class skills {
         // Find the method of the course skills.
         if ($skillobj instanceof \tool_skills\courseskills) {
             $method = 'course';
-        } else if ($skillobj instanceof \skilladdon_activityskills\moduleskills) {
-            $method = 'activity';
         } else {
-            $method = '';
+            $method = helper::extend_addons_get_allocation_method($skillobj);
         }
 
         // Allocation method id.

@@ -161,4 +161,25 @@ class helper {
         }
     }
 
+    /**
+     * Add the activity method user skills data .
+     *
+     * @param \tool_skills\allocation_method $skillobj
+     * @return string
+     */
+    public static function extend_addons_get_allocation_method($skillobj) {
+        // Extend the method from sub plugins.
+        $methods = self::get_addon_extend_method('get_allocation_method');
+        foreach ($methods as $method) {
+            // Trigger the skill id.
+            $result = $method->get_allocation_method($skillobj);
+
+            // Find the allocation method, break the check.
+            if ($result) {
+                break;
+            }
+        }
+        return $result ?? '';
+    }
+
 }
