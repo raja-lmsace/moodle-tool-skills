@@ -175,3 +175,5 @@ $string['path'] = 'Category path';
 $string['conditionassignedusers'] = 'Relative role users';
 $string['conditionusercohort'] = 'Users in same cohort';
 $string['skillsdatasource'] = 'Skills';
+$string['userproficiency'] = 'Proficiency';
+$string['userpercentage'] = 'Percentage';

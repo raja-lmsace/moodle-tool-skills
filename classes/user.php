@@ -197,5 +197,35 @@ class user {
         return null;
     }
 
+    /**
+     * Get user proficiency level.
+     *
+     * @param int $skillid
+     * @param int $points
+     * @return string
+     */
+    public function get_user_proficency_level(int $skillid, int $points) {
+
+        $skill = skills::get($skillid);
+        $levels = $skill->get_levels();
+        foreach ($levels as $level) {
+            if ($points >= $level->points) {
+                $proficiencylevel = $level->name;
+            }
+        }
+
+        return $proficiencylevel ?? '';
+    }
+
+    /**
+     * Get the user percentage in the skill.
+     *
+     * @return string
+     */
+    public function get_user_percentage(int $skillid, $points) {
+        $skillpoint = skills::get($skillid)->get_points_to_earnskill();
+        $percentage = ($points / $skillpoint) * 100;
+        return ((int) $percentage) . '%';
+    }
 
 }

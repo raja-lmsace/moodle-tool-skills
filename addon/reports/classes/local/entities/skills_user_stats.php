@@ -29,6 +29,8 @@ use core_reportbuilder\local\filters\{date, number, select, text, boolean_select
 use lang_string;
 use core_cohort\reportbuilder\local\entities\cohort;
 use core_cohort\reportbuilder\local\entities\cohort_member;
+use tool_skills\skills;
+use tool_skills\user;
 
 /**
  * Skills user points entity base for report source.
@@ -131,14 +133,43 @@ class skills_user_stats extends base {
         ))
         ->set_is_sortable(true)
         ->add_joins($this->get_joins())
-        ->add_field("{$userpoints}.timemodified")
+        ->add_field("{$userpoints}.points")
         ->add_callback(static function ($value, $row): string {
             return $value ? userdate($value, get_string('strftimedatetime', 'langconfig')) : '-';
         });
 
+        // Modified time of the user points.
+        $columns[] = (new column(
+            'userproficiency',
+            new lang_string('userproficiency', 'tool_skills'),
+            $this->get_entity_name()
+        ))
+        ->set_is_sortable(true)
+        ->add_joins($this->get_joins())
+        ->add_field("{$userpoints}.userid")
+        ->add_field("{$userpoints}.skill")
+        ->add_field("{$userpoints}.points")
+        ->add_callback(static function($value, $row): string {
+            return user::get($row->userid)->get_user_proficency_level($row->skill, $row->points);
+        });
+
+        // Modified time of the user points.
+        $columns[] = (new column(
+            'userpercentage',
+            new lang_string('userpercentage', 'tool_skills'),
+            $this->get_entity_name()
+        ))
+        ->set_is_sortable(true)
+        ->add_joins($this->get_joins())
+        ->add_field("{$userpoints}.userid")
+        ->add_field("{$userpoints}.skill")
+        ->add_field("{$userpoints}.points")
+        ->add_callback(static function($value, $row): string {
+            return user::get($row->userid)->get_user_percentage($row->skill, $row->points);
+        });
+
         return $columns;
     }
-
 
     /**
      * Defined filters for the user skill points entities.
