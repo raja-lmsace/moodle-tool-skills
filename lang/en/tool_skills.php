@@ -172,3 +172,6 @@ $string['coursecount'] = 'Number of courses';
 $string['categoryvisiblity'] = 'Category visibility';
 $string['depth'] = 'Depth';
 $string['path'] = 'Category path';
+$string['conditionassignedusers'] = 'Relative role users';
+$string['conditionusercohort'] = 'Users in same cohort';
+$string['skillsdatasource'] = 'Skills';

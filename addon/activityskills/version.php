@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die;
 
 $plugin->component = 'skilladdon_activityskills';
-$plugin->version = 2024011000;
+$plugin->version = 2024012000;
 $plugin->requires  = 2021051700;
 $plugin->maturity  = MATURITY_ALPHA;
 $plugin->release = '1.1';

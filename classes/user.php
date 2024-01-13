@@ -129,12 +129,8 @@ class user {
             $point->skillcourse = courseskills::get($point->courseid);
             $point->skillcourse->set_skill_instance($point->id);
 
-            if (tool_skills_has_activityskills()) {
-                // Activity skills data.
-                $point->activityskills = $DB->get_records('tool_skills_course_activity', [
-                    'skill' => $point->skill, 'courseid' => $point->courseid,
-                ]);
-            }
+            // Extend addons to inlcude its skill data.
+            \tool_skills\helper::extend_addons_add_userskills_data($point);
 
             $point->userpoints = $DB->get_record('tool_skills_userpoints', ['skill' => $point->skill, 'userid' => $this->userid]);
             // Skill levels.

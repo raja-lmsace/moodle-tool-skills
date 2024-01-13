@@ -160,7 +160,7 @@ class skills_user_stats extends base {
         $conditions[] = (new filter(
             boolean_select::class,
             'userid',
-            new lang_string('userid'),
+            new lang_string('conditionassignedusers', 'tool_skills'),
             $this->get_entity_name(),
             "u.id IN ($sql)",
             ['userid' => $USER->id]
@@ -169,33 +169,22 @@ class skills_user_stats extends base {
         ->add_joins($this->get_joins());
 
         // Same cohort based filter.
-        // User points table alias.
-        $userpointalias = $this->get_table_alias('tool_skills_userpoints');
-        // Cohort memeber entity.
-        $cohortmementity = new cohort_member();
-        $cohortmementity = $cohortmementity->set_table_alias('cohort_members', 'chtm');
-        $cohortmemalias = $cohortmementity->get_table_alias('cohort_members');
         // Cohort entity.
         $cohortentity = new cohort();
         $cohortentity = $cohortentity->set_table_alias('cohort', 'cht');
         $cohortalias = $cohortentity->get_table_alias('cohort');
 
-        // Join query to join the user cohort.
-        $cohortjoin = "LEFT JOIN {cohort_members} {$cohortmemalias} ON {$cohortmemalias}.userid = {$userpointalias}.userid
-        LEFT JOIN {cohort} {$cohortalias} ON {$cohortalias}.id = {$cohortmemalias}.cohortid";
-
         // Cohort condition.
         $conditions[] = (new filter(
             boolean_select::class,
             'usercohort',
-            new lang_string('userid'),
+            new lang_string('conditionusercohort', 'tool_skills'),
             $this->get_entity_name(),
             "{$cohortalias}.id IN ($cohortsql)",
             ['cohortuserid' => $USER->id]
         ))
         ->set_options([boolean_select::CHECKED => new lang_string('yes')])
-        ->add_joins($this->get_joins())
-        ->add_join($cohortjoin);
+        ->add_joins($this->get_joins());
 
         return [[], $conditions];
     }

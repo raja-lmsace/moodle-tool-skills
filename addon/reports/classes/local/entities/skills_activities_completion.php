@@ -79,15 +79,6 @@ class skills_activities_completion extends base {
             $this->add_column($column);
         }
 
-        list($filters, $conditions) = $this->get_all_filters();
-        foreach ($filters as $filter) {
-            $this->add_filter($filter);
-        }
-
-        foreach ($conditions as $condition) {
-            $this->add_condition($condition);
-        }
-
         return $this;
     }
 

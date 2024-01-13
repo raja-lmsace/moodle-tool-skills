@@ -120,9 +120,8 @@ class courseskills extends \tool_skills\allocation_method {
 
         $DB->delete_records('tool_skills_courses', ['courseid' => $this->courseid]);
 
-        if (tool_skills_has_activityskills()) {
-            $DB->delete_records('tool_skills_course_activity', ['courseid' => $this->courseid]);
-        }
+        \tool_skills\helper::extend_addons_remove_course_instance($this->courseid);
+
         $this->get_logs()->delete_method_log($this->courseid, 'course');
     }
 

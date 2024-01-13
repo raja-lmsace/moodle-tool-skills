@@ -120,354 +120,204 @@ Feature: Allocate points to users, need to manage levels and assign skills to co
       | Points                 | 150      |
     And I press "Save changes"
 
-  #1. Activity availability Not in level restrict access
-  @javascript
-  Scenario: Activity availability Not in level restrict access
     Given I am on the "Test page1" "page activity" page
     And I click on "More" "link" in the ".secondary-navigation" "css_element"
     And I click on "Manage skills" "link"
     And I should see "Begineer" in the "mod_skills_list" "table"
     And I click on ".skill-course-actions .action-edit" "css_element"
     And I set the following fields to these values:
-      | Upon completion | Points |
-      | Points                   | 30     |
+      | Upon activity completion | Points |
+      | Points          | 10     |
     And I wait "10" seconds
     And I press "Save changes"
-    Then I should see "Points - 30" in the "begineer" "table_row"
-    And I am on the "Test page2" "page activity" page
+    Then I should see "Points - 10" in the "begineer" "table_row"
+    And I am on the "Test page4" "page activity" page
     And I click on "More" "link" in the ".secondary-navigation" "css_element"
     And I click on "Manage skills" "link"
     And I should see "Begineer"
     And I click on ".skill-course-actions .action-edit" "css_element"
     And I set the following fields to these values:
-      | Upon completion | Points |
-      | Points                   | 20     |
+      | Upon activity completion | Points |
+      | Points          | 20     |
     And I press "Save changes"
     Then I should see "Points - 20" in the "begineer" "table_row"
-    And I am on the "Test page1" "page activity" page
+
+  #1. Activity availability Not in level restrict access
+  @javascript
+  Scenario: Activity availability Not in level restrict access
+    Given I am on the "Test page1" "page activity" page
     And I navigate to "Settings" in current page administration
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
     And I click on "Skills" "button" in the "Add restriction..." "dialogue"
     And I set the field "skills" to "Begineer"
     And I set the field "Type" to "Not in level"
+    And I set the field "Level" to "Level 1"
     And I press "Save and return to course"
-    And I wait "10" seconds
+    And I wait "5" seconds
+    And I log out
+    And I am on the "Course 1" course page logged in as student1
+    And I am on the "student1" "user > profile" page
+    Then I should see "Skills earned"
+    And I should see "Earned: 0"
+    And I wait "5" seconds
+    And I am on the "Test page1" "page activity" page
+    And I press "Mark as done"
+    And I wait until "Done" "button" exists
+    And I am on the "student1" "user > profile" page
+    Then I should see "Earned: 10"
+    And I am on the "Test page4" "page activity" page
+    And I press "Mark as done"
+    And I wait until "Done" "button" exists
+    And I am on the "student1" "user > profile" page
+    Then I should see "Earned: 20"
 
-#   #2. Activity availability 'Exact level' restrict access
-#   @javascript
-#   Scenario: Activity availability 'Exact level' restrict access
-#     Given I am on the "Test page4" "page activity" page
-#     And I navigate to "Settings" in current page administration
-#     And I set the following fields to these values:
-#       | skills    | 1 |
-#       | ct        | 1 |
-#       | level     | 2 |
-#     And I press "Save and return to course"
-#     And I wait "10" seconds
+  #2. Activity availability 'Exact level' restrict access
+  @javascript
+  Scenario: Activity availability 'Exact level' restrict access
+    Given I am on the "Test page4" "page activity" page
+    And I navigate to "Settings" in current page administration
+    And I expand all fieldsets
+    And I click on "Add restriction..." "button"
+    And I click on "Skills" "button" in the "Add restriction..." "dialogue"
+    And I set the field "skills" to "Competence"
+    And I set the field "Type" to "Exact level"
+    And I set the field "Level" to "Level 1"
+    And I press "Save and return to course"
+    And I wait "5" seconds
+    And I log out
+    And I am on the "Course 1" course page logged in as student1
+    And I am on the "student1" "user > profile" page
+    Then I should see "Skills earned"
+    And I should see "Earned: 0"
+    And I wait "5" seconds
+    And I am on the "Test page4" "page activity" page
+    And I press "Mark as done"
+    And I wait until "Done" "button" exists
+    And I am on the "student1" "user > profile" page
+    Then I should see "Earned: 20"
 
-#   #3. Activity availability 'Selected level or higher' restrict access
-#   @javascript
-#   Scenario: Activity availability 'Selected level or higher' restrict access
-#     Given I am on the "Test page4" "page activity" page
-#     And I navigate to "Settings" in current page administration
-#     And I set the following fields to these values:
-#       | skills    | 1 |
-#       | ct        | 2 |
-#       | level     | 2 |
-#     And I press "Save and return to course"
-#     And I wait "10" seconds
+  # #3. Activity availability 'Selected level or higher' restrict access
+  @javascript
+  Scenario: Activity availability 'Selected level or higher' restrict access
+    Given I am on the "Test page4" "page activity" page
+    And I navigate to "Settings" in current page administration
+    And I expand all fieldsets
+    And I click on "Add restriction..." "button"
+    And I click on "Skills" "button" in the "Add restriction..." "dialogue"
+    And I set the field "skills" to "Competence"
+    And I set the field "Type" to "Selected level or higher"
+    And I set the field "Level" to "Level 2"
+    And I press "Save and return to course"
+    And I wait "5" seconds
+    And I log out
+    And I am on the "Course 1" course page logged in as student1
+    And I am on the "student1" "user > profile" page
+    Then I should see "Skills earned"
+    And I should see "Earned: 0"
+    And I wait "5" seconds
+    And I am on the "Test page4" "page activity" page
+    And I press "Mark as done"
+    And I wait until "Done" "button" exists
+    And I am on the "student1" "user > profile" page
+    Then I should see "Earned: 20"
 
-#   #4. Activity availability 'Selected level or lower' restrict access
-#   @javascript
-#   Scenario: Activity availability 'Selected level or lower' restrict access
-#     Given I am on the "Test page4" "page activity" page
-#     And I navigate to "Settings" in current page administration
-#     And I set the following fields to these values:
-#       | skills    | 1 |
-#       | ct        | 3 |
-#       | level     | 2 |
-#     And I press "Save and return to course"
-#     And I wait "10" seconds
+  #4. Activity availability 'Selected level or lower' restrict access
+  @javascript
+  Scenario: Activity availability 'Selected level or lower' restrict access
+    Given I am on the "Test page4" "page activity" page
+    And I navigate to "Settings" in current page administration
+    And I expand all fieldsets
+    And I click on "Add restriction..." "button"
+    And I click on "Skills" "button" in the "Add restriction..." "dialogue"
+    And I set the field "skills" to "Competence"
+    And I set the field "Type" to "Selected level or lower"
+    And I set the field "Level" to "Level 1"
+    And I press "Save and return to course"
+    And I wait "5" seconds
+    And I log out
+    And I am on the "Course 1" course page logged in as student1
+    And I am on the "student1" "user > profile" page
+    Then I should see "Skills earned"
+    And I should see "Earned: 0"
+    And I wait "5" seconds
+    And I am on the "Test page4" "page activity" page
+    And I press "Mark as done"
+    And I wait until "Done" "button" exists
+    And I am on the "student1" "user > profile" page
+    Then I should see "Earned: 8"
 
-#   #5. Activity availability 'Selected level or lower' restrict access
-#   @javascript
-#   Scenario: Activity availability 'Selected level or lower' restrict access
-#     Given I am on the "Test page4" "page activity" page
-#     And I navigate to "Settings" in current page administration
-#     And I set the following fields to these values:
-#       | skills    | 1 |
-#       | ct        | 4 |
-#       | level     | 2 |
-#     And I press "Save and return to course"
-#     And I wait "10" seconds
+  #5. Activity availability 'Exact points' restrict access
+  @javascript
+  Scenario: Activity availability 'Exact points' restrict access
+    Given I am on the "Test page4" "page activity" page
+    And I navigate to "Settings" in current page administration
+    And I expand all fieldsets
+    And I click on "Add restriction..." "button"
+    And I click on "Skills" "button" in the "Add restriction..." "dialogue"
+    And I set the field "skills" to "Competence"
+    And I set the field "Type" to "Exact points"
+    And I set the field "Level" to "Level 1"
+    And I press "Save and return to course"
+    And I wait "5" seconds
+    And I log out
+    And I am on the "Course 1" course page logged in as student1
+    And I am on the "student1" "user > profile" page
+    Then I should see "Skills earned"
+    And I should see "Earned: 0"
+    And I wait "5" seconds
+    And I am on the "Test page4" "page activity" page
+    And I press "Mark as done"
+    And I wait until "Done" "button" exists
+    And I am on the "student1" "user > profile" page
+    Then I should see "Earned: 20"
 
-#   #6. Activity availability 'Exact points' restrict access
-#   @javascript
-#   Scenario: Activity availability 'Exact points' restrict access
-#     Given I am on the "Test page4" "page activity" page
-#     And I navigate to "Settings" in current page administration
-#     And I set the following fields to these values:
-#       | skills    | 1  |
-#       | ct        | 5  |
-#       | points    | 10 |
-#     And I press "Save and return to course"
-#     And I wait "10" seconds
+  #6. Activity availability 'More or equal than points' restrict access
+  @javascript
+  Scenario: Activity availability 'More or equal than points' restrict access
+    Given I am on the "Test page4" "page activity" page
+    And I navigate to "Settings" in current page administration
+    And I expand all fieldsets
+    And I click on "Add restriction..." "button"
+    And I click on "Skills" "button" in the "Add restriction..." "dialogue"
+    And I set the field "skills" to "Competence"
+    And I set the field "Type" to "More or equal than points"
+    And I set the field "Level" to "Level 1"
+    And I press "Save and return to course"
+    And I wait "5" seconds
+    And I log out
+    And I am on the "Course 1" course page logged in as student1
+    And I am on the "student1" "user > profile" page
+    Then I should see "Skills earned"
+    And I should see "Earned: 0"
+    And I wait "5" seconds
+    And I am on the "Test page4" "page activity" page
+    And I press "Mark as done"
+    And I wait until "Done" "button" exists
+    And I am on the "student1" "user > profile" page
+    Then I should see "Earned: 20"
 
-#   #7. Activity availability 'More or equal than points' restrict access
-#   @javascript
-#   Scenario: Activity availability 'More or equal than points' restrict access
-#     Given I am on the "Test page4" "page activity" page
-#     And I navigate to "Settings" in current page administration
-#     And I set the following fields to these values:
-#       | skills    | 1  |
-#       | ct        | 6  |
-#       | points    | 12 |
-#     And I press "Save and return to course"
-#     And I wait "10" seconds
-
-#   #8. Activity availability 'Less points' restrict access
-#   @javascript
-#   Scenario: Activity availability 'Less points' restrict access
-#     Given I am on the "Test page4" "page activity" page
-#     And I navigate to "Settings" in current page administration
-#     And I set the following fields to these values:
-#       | skills    | 1  |
-#       | ct        | 6  |
-#       | points    | 12 |
-#     And I press "Save and return to course"
-#     And I wait "10" seconds
-
-# ------------------------------------
-#   #2. Assign Negative points to the user during an activity
-#   @javascript
-#   Scenario: Assign Negative points to the user during an activity
-#     Given I am on the "Test page1" "page activity" page
-#     And I click on "More" "link" in the ".secondary-navigation" "css_element"
-#     And I click on "Manage skills" "link"
-#     And I should see "Begineer" in the "mod_skills_list" "table"
-#     And I click on ".skill-course-actions .action-edit" "css_element"
-#     And I set the following fields to these values:
-#       | Upon completion | Points |
-#       | Points                   | -50    |
-#     And I press "Save changes"
-#     Then I should see "Points - -50" in the "begineer" "table_row"
-#     And I log out
-#     And I am on the "Course 1" course page logged in as student1
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Skills earned"
-#     And I should see "Earned: 0"
-#     And I am on the "Test page1" "page activity" page
-#     And I press "Mark as done"
-#     And I wait until "Done" "button" exists
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Earned: -50"
-
-#   #3. Elevate the user's level upon completing an activity
-#   @javascript
-#   Scenario: Elevate the user's level upon completing an activity
-#     Given I am on the "Test page1" "page activity" page
-#     And I click on "More" "link" in the ".secondary-navigation" "css_element"
-#     And I click on "Manage skills" "link"
-#     And I should see "Begineer" in the "mod_skills_list" "table"
-#     And I click on ".skill-course-actions .action-edit" "css_element"
-#     And I set the following fields to these values:
-#       | Upon completion | Set level |
-#       | Level                    | begineer  |
-#     And I press "Save changes"
-#     Then I should see "Set level - begineer" in the "begineer" "table_row"
-#     And I am on the "Quiz1" "quiz activity" page
-#     And I click on "More" "link" in the ".secondary-navigation" "css_element"
-#     And I click on "Manage skills" "link"
-#     And I should see "Begineer" in the "mod_skills_list" "table"
-#     And I click on ".skill-course-actions .action-edit" "css_element"
-#     And I set the following fields to these values:
-#       | Upon completion | Set level |
-#       | Level                    | Level 1  |
-#     And I press "Save changes"
-#     Then I should see "Set level - begineer" in the "begineer" "table_row"
-#     And I am on the "Test page4" "page activity" page
-#     And I click on "More" "link" in the ".secondary-navigation" "css_element"
-#     And I click on "Manage skills" "link"
-#     And I should see "Begineer" in the "mod_skills_list" "table"
-#     And I click on ".skill-course-actions .action-edit" "css_element"
-#     And I set the following fields to these values:
-#       | Upon completion | Set level |
-#       | Level                    | Level 2  |
-#     And I press "Save changes"
-#     Then I should see "Set level - begineer" in the "begineer" "table_row"
-#     And I log out
-#     And I am on the "Course 1" course page logged in as student1
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Skills earned"
-#     And I should see "Earned: 0"
-#     And I am on the "Test page1" "page activity" page
-#     And I press "Mark as done"
-#     And I wait until "Done" "button" exists
-#     And I am on the "Quiz1" "quiz activity" page
-#     And I press "Mark as done"
-#     And I wait until "Done" "button" exists
-#     And I am on the "Test page4" "page activity" page
-#     And I press "Mark as done"
-#     And I wait until "Done" "button" exists
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Earned: 30"
-
-#   #4. Force the user to change their level
-#   @javascript
-#   Scenario: Force the user to change their level
-#     Given I am on the "Test page1" "page activity" page
-#     And I click on "More" "link" in the ".secondary-navigation" "css_element"
-#     And I click on "Manage skills" "link"
-#     And I should see "Begineer" in the "mod_skills_list" "table"
-#     And I click on ".skill-course-actions .action-edit" "css_element"
-#     And I set the following fields to these values:
-#       | Upon completion | Set level |
-#       | Level                    | Level 1   |
-#     And I press "Save changes"
-#     Then I should see "Set level - Level 1" in the "begineer" "table_row"
-#     And I am on the "Quiz1" "quiz activity" page
-#     And I click on "More" "link" in the ".secondary-navigation" "css_element"
-#     And I click on "Manage skills" "link"
-#     And I should see "Begineer" in the "mod_skills_list" "table"
-#     And I click on ".skill-course-actions .action-edit" "css_element"
-#     And I set the following fields to these values:
-#       | Upon completion | Set level |
-#       | Level                    | Level 2   |
-#     And I press "Save changes"
-#     Then I should see "Set level - Level 2" in the "begineer" "table_row"
-#     And I am on the "Test page4" "page activity" page
-#     And I click on "More" "link" in the ".secondary-navigation" "css_element"
-#     And I click on "Manage skills" "link"
-#     And I should see "Begineer" in the "mod_skills_list" "table"
-#     And I click on ".skill-course-actions .action-edit" "css_element"
-#     And I set the following fields to these values:
-#       | Upon completion | Force level |
-#       | Level                    | begineer    |
-#     And I press "Save changes"
-#     Then I should see "Force level - begineer" in the "begineer" "table_row"
-#     And I log out
-#     And I am on the "Course 1" course page logged in as student1
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Skills earned"
-#     And I should see "Earned: 0"
-#     And I am on the "Test page1" "page activity" page
-#     And I press "Mark as done"
-#     And I wait until "Done" "button" exists
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Skills earned"
-#     And I should see "Earned: 20"
-#     And I am on the "Quiz1" "quiz activity" page
-#     And I press "Mark as done"
-#     And I wait until "Done" "button" exists
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Skills earned"
-#     And I should see "Earned: 30"
-#     And I am on the "Test page4" "page activity" page
-#     And I press "Mark as done"
-#     And I wait until "Done" "button" exists
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Earned: 10"
-
-#   #5. Set the user to attain points corresponding to their grade level
-#   @javascript
-#   Scenario: Set the user to attain points corresponding to their grade level
-#     Given I am on the "Assign1" "assign activity" page
-#     And I click on "More" "link" in the ".secondary-navigation" "css_element"
-#     And I click on "Manage skills" "link"
-#     And I should see "Begineer" in the "mod_skills_list" "table"
-#     And I click on ".skill-course-actions .action-edit" "css_element"
-#     And I set the following fields to these values:
-#       | Upon completion | Points by grade |
-#     And I press "Save changes"
-#     Then I should see "Points by grade" in the "begineer" "table_row"
-#     When I am on the "Assign1" "assign activity" page
-#     And I navigate to "Settings" in current page administration
-#     And I set the following fields to these values:
-#       | Grade to pass    | 50.00 |
-#     And I press "Save and return to course"
-#     And I log out
-#     And I am on the "Course 1" course page logged in as student1
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Skills earned"
-#     And I should see "Earned: 0"
-#     And I am on the "Assign1" "assign activity" page
-#     And I press "Mark as done"
-#     And I wait until "Done" "button" exists
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Skills earned"
-#     And I should see "Earned: 0"
-#     And I log out
-#     When I am on the "Assign1" "assign activity" page logged in as admin
-#     And I follow "View all submissions"
-#     And I click on "Grade" "link" in the "Student First" "table_row"
-#     When I set the following fields to these values:
-#       | Grade out of 100  | 60 |
-#     And I press "Save changes"
-#     And I should see "Graded"
-#     And I log out
-#     And I am on the "Course 1" course page logged in as student1
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Skills earned"
-#     And I should see "Earned: 60"
-#     And I wait "10" seconds
-
-#   #6. Calculate the average points for 3 different skill in a single activity
-#   @javascript
-#   Scenario: Calculate the average points for 3 different skill in a single activity
-#     Given I am on the "Test page1" "page activity" page
-#     And I click on "More" "link" in the ".secondary-navigation" "css_element"
-#     And I click on "Manage skills" "link"
-#     And I should see "Begineer" in the "mod_skills_list" "table"
-#     And I click on ".skill-course-actions .action-edit" "css_element" in the "begineer" "table_row"
-#     And I set the following fields to these values:
-#       | Upon completion | Points |
-#       | Points                   | 5      |
-#     And I press "Save changes"
-#     Then I should see "Points - 5" in the "begineer" "table_row"
-#     And I am on the "Test page2" "page activity" page
-#     And I click on "More" "link" in the ".secondary-navigation" "css_element"
-#     And I click on "Manage skills" "link"
-#     And I should see "Competence"
-#     And I click on ".skill-course-actions .action-edit" "css_element" in the "competence" "table_row"
-#     And I set the following fields to these values:
-#       | Upon completion | Set level |
-#       | Level                    | Level 2   |
-#     And I press "Save changes"
-#     Then I should see "Set level - Level 2" in the "competence" "table_row"
-#     And I am on the "Test page4" "page activity" page
-#     And I click on "More" "link" in the ".secondary-navigation" "css_element"
-#     And I click on "Manage skills" "link"
-#     And I should see "Expert"
-#     And I click on ".skill-course-actions .action-edit" "css_element" in the "expert" "table_row"
-#     And I set the following fields to these values:
-#       | Upon completion | Force level  |
-#       | Level                    | begineer     |
-#     And I press "Save changes"
-#     Then I should see "Force level - begineer" in the "expert" "table_row"
-#     And I am on the "Test page1" "page activity" page
-#     And I navigate to "Settings" in current page administration
-#     And I set the following fields to these values:
-#       | id_completion_2  | 2 |
-#       | completionview   | 1 |
-#     And I press "Save and return to course"
-#     And I log out
-#     And I am on the "student1" "user > profile" page logged in as student1
-#     Then I should see "Skills earned"
-#     And I should see "Earned: 0"
-#     And I am on the "Test page1" "page activity" page
-#     And I should see "Done: View"
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Skills earned"
-#     And I should see "Earned: 5"
-#     And I am on the "Test page2" "page activity" page
-#     And I press "Mark as done"
-#     And I wait until "Done" "button" exists
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Earned: 30"
-#     And I am on the "Test page4" "page activity" page
-#     And I press "Mark as done"
-#     And I wait until "Done" "button" exists
-#     And I am on the "student1" "user > profile" page
-#     Then I should see "Earned: 10"
-#     And I wait "10" seconds
+  #7. Activity availability 'Less points' restrict access
+  @javascript
+  Scenario: Activity availability 'Less points' restrict access
+    Given I am on the "Test page4" "page activity" page
+    And I navigate to "Settings" in current page administration
+    And I expand all fieldsets
+    And I click on "Add restriction..." "button"
+    And I click on "Skills" "button" in the "Add restriction..." "dialogue"
+    And I set the field "skills" to "Competence"
+    And I set the field "Type" to "Exact level"
+    And I set the field "Level" to "Level 1"
+    And I press "Save and return to course"
+    And I wait "5" seconds
+    And I log out
+    And I am on the "Course 1" course page logged in as student1
+    And I am on the "student1" "user > profile" page
+    Then I should see "Skills earned"
+    And I should see "Earned: 0"
+    And I wait "5" seconds
+    And I am on the "Test page4" "page activity" page
+    And I press "Mark as done"
+    And I wait until "Done" "button" exists
+    And I am on the "student1" "user > profile" page
+    Then I should see "Earned: 8"

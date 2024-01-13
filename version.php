@@ -22,11 +22,11 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die('No direct access');
+defined('MOODLE_INTERNAL') || die;
 
-$plugin->version = 2024011000;
+$plugin->version = 2024012000;
 $plugin->requires  = 2021051700;        // Requires this Moodle version.
 $plugin->component = 'tool_skills'; // Full name of the plugin (used for diagnostics).
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->release = '1.1';
-$plugin->supported = [400, 402];
+$plugin->supported = [400, 403];

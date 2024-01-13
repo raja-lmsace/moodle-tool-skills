@@ -135,37 +135,7 @@ function tool_skills_myprofile_navigation(tree $tree, $user, $iscurrentuser, $co
 
                 $skillstr .= html_writer::tag('li', $li);
 
-                if (tool_skills_has_activityskills()) {
-                    $modskill = $data->activityskills;
-
-                    foreach ($modskill as $modinstance => $moddata) {
-
-                        // Activity skills.
-                        $moduleskillsobj = new skilladdon_activityskills\moduleskills($moddata->courseid, $moddata->modid);
-                        $moduleskillsobj->set_skill_instance($moddata->id);
-                        $modpointstoearn = $moduleskillsobj->get_points_earned_from_course_module($moddata);
-
-                        // Course module URL.
-                        $cm = get_coursemodule_from_id(false, $moddata->modid);
-                        if ($DB->record_exists('course_modules', ['id' => $cm->id])) {
-                            $moduleurl = new moodle_url('/mod/'.$cm->modname.'/view.php', ['id' => $cm->id]);
-
-                            // Points earned from this course module.
-                            $pointsfromcoursemod = $moduleskillsobj->get_user_earned_activity_points($USER->id, $moddata);
-
-                            $li = html_writer::link($moduleurl, format_string($cm->name));
-
-                            $modulepointstr = get_string('pointsforcompletion', 'tool_skills') . " : " . $modpointstoearn;
-                            $modulepointstr .= html_writer::tag('b',
-                                " (".get_string('earned', 'tool_skills') . ": " .( $pointsfromcoursemod ?? 0) . ")" );
-
-                            $li .= html_writer::tag('p', $modulepointstr, ['class' => 'skills-points-'.$cm->name]);
-
-                            $skillstr .= html_writer::tag('li', $li);
-                        }
-                    }
-
-                }
+                \tool_skills\helper::extend_addons_add_user_points_content($skillstr, $data);
             }
 
             $skillstr .= html_writer::end_tag('ul'); // End the skill list.

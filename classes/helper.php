@@ -86,4 +86,79 @@ class helper {
         return $skills;
     }
 
+    /**
+     * Get addon extend method.
+     *
+     * @param string $method
+     * @return array
+     */
+    public static function get_addon_extend_method($method) {
+        $addon = new \tool_skills\plugininfo\skilladdon();
+        $methods = $addon->get_plugins_base($method);
+        return $methods;
+    }
+
+    /**
+     * Extend the remove skills addon.
+     *
+     * @param int $skillid Id of the skill.
+     * @return void
+     */
+    public static function extend_addons_remove_skills(int $skillid) {
+        // Extend the method from sub plugins.
+        $methods = self::get_addon_extend_method('remove_skills');
+        foreach ($methods as $method) {
+            // Trigger the skill id.
+            $method->remove_skills($skillid);
+        }
+
+    }
+
+
+    /**
+     * Remove course instance.
+     *
+     * @param int $courseid Course ID.
+     * @return void
+     */
+    public static function extend_addons_remove_course_instance(int $courseid) {
+        // Extend the method from sub plugins.
+        $methods = self::get_addon_extend_method('remove_course_instance');
+        foreach ($methods as $method) {
+            // Trigger the skill id.
+            $method->remove_course_instance($courseid);
+        }
+    }
+
+    /**
+     * Add the activity method user skills data .
+     *
+     * @param int $point
+     * @return void
+     */
+    public static function extend_addons_add_userskills_data(&$point) {
+        // Extend the method from sub plugins.
+        $methods = self::get_addon_extend_method('add_userskills_data');
+        foreach ($methods as $method) {
+            // Trigger the skill id.
+            $method->add_userskills_data($point);
+        }
+    }
+
+    /**
+     * Add to the user points content in profile page.
+     *
+     * @param int $skillstr Course ID.
+     * @param stdclass $data Data.
+     * @return void
+     */
+    public static function extend_addons_add_user_points_content(&$skillstr, $data) {
+        // Extend the method from sub plugins.
+        $methods = self::get_addon_extend_method('add_user_points_content');
+        foreach ($methods as $method) {
+            // Trigger the skill id.
+            $method->add_user_points_content($skillstr, $data);
+        }
+    }
+
 }

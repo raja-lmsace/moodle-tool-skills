@@ -238,25 +238,51 @@ class moduleskills extends \tool_skills\allocation_method {
 
                 switch ($data->uponmodcompletion) {
 
-                    case skills::COMPLETIONFORCELEVEL:
-                        $skillobj->force_level($this, $data->level, $userid);
+                    case skills::COMPLETIONPOINTS:
+                        $skillobj->increase_points($this, $data->points, $userid);
                         break;
 
                     case skills::COMPLETIONSETLEVEL:
                         $skillobj->moveto_level($this, $data->level, $userid);
                         break;
 
-                    case skills::COMPLETIONPOINTS:
-                        $skillobj->increase_points($this, $data->points, $userid);
+                    case skills::COMPLETIONFORCELEVEL:
+                        $skillobj->force_level($this, $data->level, $userid);
                         break;
 
                     case skills::COMPLETIONPOINTSGRADE:
-                        $skillobj->get_activity_grade_points($this, $userid, $data->modid);
+                        $gradepoint = self::get_grade_point($data->modid, $userid);
+                        $skillobj->increase_points($this, $gradepoint, $userid);
                         break;
                 }
 
                 $transaction->allow_commit();
             }
+        }
+    }
+
+    /**
+     * Manage the grade submission points.
+     *
+     * @param int $userid User ID
+     * @param int $cmid Course module ID
+     * @return void
+     */
+    public function manage_grade_by_points($userid, $cmid) {
+        global $DB;
+
+        $activtyskills = $this->get_instance_skills();
+        foreach ($activtyskills as $id => $sobj) {
+            $this->set_skill_instance($id);
+            $data = $this->build_data();
+            $transaction = $DB->start_delegated_transaction();
+
+            if ($data->uponmodcompletion == skills::COMPLETIONPOINTSGRADE) {
+                $gradepoint = self::get_grade_point($data->modid, $userid);
+                $sobj->increase_points($this, $gradepoint, $userid);
+            }
+
+            $transaction->allow_commit();
         }
     }
 

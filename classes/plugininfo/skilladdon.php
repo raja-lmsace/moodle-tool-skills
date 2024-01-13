@@ -52,4 +52,29 @@ class skilladdon extends \core\plugininfo\base {
     public function is_uninstall_allowed() {
         return true;
     }
+
+    /**
+     * Get the list of action plugins with its base class.
+     *
+     * @param string $method
+     * @return array
+     */
+    public function get_plugins_base($method) {
+        $plugins = \core_component::get_plugin_list('skilladdon');
+
+        if (!empty($plugins)) {
+            foreach ($plugins as $componentname => $pluginpath) {
+                $classname = "skilladdon_$componentname\manage_skills";
+                if (!class_exists($classname)) {
+                    continue;
+                }
+
+                if (method_exists("skilladdon_$componentname\manage_skills", $method)) {
+                    $instance = new $classname();
+                    $extend[] = $instance;
+                }
+            }
+        }
+        return $extend ?? [];
+    }
 }

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Skills report addons - version details.
+ * Skills report addons - Language strings details.
  *
  * @package   skilladdon_reports
  * @copyright 2023, bdecent gmbh bdecent.de
@@ -24,11 +24,4 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = 'skilladdon_reports';
-$plugin->version = 2024012000;
-$plugin->requires  = 2021051700;
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release = '1.0';
-$plugin->dependencies = [
-    'tool_skills' => 2023102505,
-];
+$string['pluginname'] = 'Report skills';

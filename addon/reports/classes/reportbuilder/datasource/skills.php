@@ -91,12 +91,6 @@ class skills extends datasource {
         $joins['user'] = "LEFT JOIN {tool_skills_userpoints} {$userpointalias} ON {$userpointalias}.skill = {$mainskillalias}.id
         JOIN {user} {$useralias} ON {$useralias}.id = {$userpointalias}.userid";
 
-        $userentity->add_join($joins['user']);
-        $userstatsentity->add_join($joins['user']);
-
-        $this->add_entity($userentity);
-        $this->add_entity($userstatsentity);
-
         $cohortmementity = new cohort_member();
         // Update the cohort memeber table alias, It uses cm as alias same as course_modules.
         $cohortmementity = $cohortmementity->set_table_alias('cohort_members', 'chtm');
@@ -106,6 +100,13 @@ class skills extends datasource {
         $cohortalias = $cohortentity->get_table_alias('cohort');
         $cohortjoin = "LEFT JOIN {cohort_members} {$cohortmemalias} ON {$cohortmemalias}.userid = {$userpointalias}.userid
         LEFT JOIN {cohort} {$cohortalias} ON {$cohortalias}.id = {$cohortmemalias}.cohortid";
+
+        $userentity->add_join($joins['user']);
+        $userstatsentity->add_join($joins['user']);
+        $userstatsentity->add_join($cohortjoin);
+
+        $this->add_entity($userentity);
+        $this->add_entity($userstatsentity);
 
         $cohortentity->add_join($joins['user']);
         $this->add_entity($cohortentity->add_join($cohortjoin));

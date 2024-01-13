@@ -250,10 +250,8 @@ class skills {
             \tool_skills\level::remove_skill_levels($this->skillid);
             // Delete all its actions.
             \tool_skills\courseskills::remove_skills($this->skillid);
-
-            if (tool_skills_has_activityskills()) {
-                \skilladdon_activityskills\moduleskills::remove_skills($this->skillid);
-            }
+            // Extend the addons remove skills.
+            \tool_skills\helper::extend_addons_remove_skills($this->skillid);
 
             $DB->delete_records('tool_skills_userpoints', ['skill' => $this->skillid]);
 
@@ -382,7 +380,7 @@ class skills {
     /**
      * Force user points to match this level.
      *
-     * @param stdclass $skillobj
+     * @param allocation_method $skillobj
      * @param int $levelid
      * @param int $userid
      *
@@ -402,7 +400,7 @@ class skills {
     /**
      * Increase the user points to complete this level.
      *
-     * @param stdclass $skillobj
+     * @param allocation_method $skillobj
      * @param int $levelid
      * @param int $userid
      *
@@ -427,7 +425,7 @@ class skills {
     /**
      * Increase the points.
      *
-     * @param stdclass $skillobj
+     * @param allocation_method $skillobj
      * @param int $points
      * @param int $userid
      *
@@ -478,7 +476,7 @@ class skills {
     /**
      * Create a log for the user point allocation.
      *
-     * @param stdclass $skillobj
+     * @param allocation_method $skillobj
      * @param int $userid
      * @param int $points
      * @return void
@@ -598,22 +596,5 @@ class skills {
 
         return $skillid ?? false;
     }
-
-    /**
-     * Get the grade points form the activity.
-     *
-     * @param stdclass $skillobj
-     * @param int $userid userid
-     * @param int $cmid course module id.
-     * @return void
-     */
-    public function get_activity_grade_points($skillobj, int $userid, int $cmid) {
-        if (tool_skills_has_activityskills()) {
-            $gradepoints = \skilladdon_activityskills\moduleskills::get_grade_point($cmid, $userid);
-            $this->increase_points($skillobj, $gradepoints, $userid);
-        }
-    }
-
-
 
 }
