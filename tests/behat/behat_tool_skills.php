@@ -76,7 +76,6 @@ class behat_tool_skills extends behat_base {
     }
 
     /**
-     *
      * This can be used on confirmation message css element.
      *
      * @Given /^I navigate to confirmation$/
@@ -88,7 +87,20 @@ class behat_tool_skills extends behat_base {
         global $CFG;
 
         $cssclass = ($CFG->branch >= "400") ? '.confirmation-dialogue' : '.modal-footer';
-        $this->execute('behat_general::i_click_on, ["Yes", "button", '.$cssclass.', "css_element"]');
+        $this->execute('behat_general::i_click_on, ["Yes", "button", '."$cssclass".', "css_element"]');
+    }
+
+    /**
+     * Confirmation messages text.
+     *
+     * @Given /^I should see "(?P<messagetext>(?:[^"]|\\")*)" message confirmation$/
+     * @param string $messagetext Messagetext.
+     */
+    public function i_should_see_message_confirmation($messagetext) {
+        global $CFG;
+
+        $cssclass = ($CFG->branch >= "400") ? '.confirmation-dialogue' : '.modal-footer';
+        $this->execute('behat_general::I should see, ["Are you sure! do you want to "'.$messagetext.'" this skill and its levels", '."$cssclass".', "css_element"]');
     }
 
 }
