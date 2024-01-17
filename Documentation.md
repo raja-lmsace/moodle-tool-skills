@@ -62,8 +62,7 @@ Upon course completion, users earn points and acquire skills based on the establ
 
    Manage skills to create a new skill and edit existing skills.
 
-
-2. **Filter:** The "Filter" option is used to filter the list of skills within the category lists.
+1. **Filter:** The "Filter" option is used to filter the list of skills within the category lists.
 
 ### Active Skills:
 
@@ -97,7 +96,7 @@ The "Active Skills" tab displays a full list of created skills or the filtered s
    2. ***Status:*** Use this toggle icon in the table to enable or disable the status of the specific skill.
    3. **Archive:** Click the "Archive" option in the table to Archive the specific skill.
 
-### ***Archived Skills:***
+### Archived Skills:
 
 Archived skills are not available in course list, and not awared to students.
 
