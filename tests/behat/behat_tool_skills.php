@@ -86,8 +86,8 @@ class behat_tool_skills extends behat_base {
     public function i_navigate_to_confirmation() {
         global $CFG;
 
-        $cssclass = ($CFG->branch >= "402") ? '.confirmation-dialogue' : '.modal-footer';
-        $this->execute('behat_general::i_click_on, ["Yes", "button", '."$cssclass".', "css_element"]');
+        $cssclass = ($CFG->branch <= "402") ? ".confirmation-dialogue" : ".modal-footer";
+        $this->execute("behat_general::i_click_on, ['Yes', 'button', "."$cssclass".", 'css_element']");
     }
 
     /**
@@ -99,8 +99,9 @@ class behat_tool_skills extends behat_base {
     public function i_should_see_message_confirmation($messagetext) {
         global $CFG;
 
-        $cssclass = ($CFG->branch >= "402") ? '.confirmation-dialogue' : '.modal-footer';
-        $this->execute('behat_general::I should see, ["Are you sure! do you want to "'.$messagetext.'" this skill and its levels", '."$cssclass".', "css_element"]');
+        $cssclass = ($CFG->branch <= "402") ? ".confirmation-dialogue" : ".modal-footer";
+        $this->execute("behat_general::I should see, ['Are you sure! do you want to ".$messagetext." this skill and its levels',
+        '"."$cssclass"."', 'css_element']");
     }
 
 }
