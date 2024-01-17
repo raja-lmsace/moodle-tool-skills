@@ -75,4 +75,20 @@ class behat_tool_skills extends behat_base {
         $this->execute("behat_general::i_click_on", ["Save changes", "button"]);
     }
 
+    /**
+     *
+     * This can be used on confirmation message css element.
+     *
+     * @Given /^I navigate to confirmation$/
+     *
+     * @throws ExpectationException
+     * @return void
+     */
+    public function i_navigate_to_confirmation() {
+        global $CFG;
+
+        $cssclass = ($CFG->branch >= "400") ? '.confirmation-dialogue' : '.modal-footer';
+        $this->execute('behat_general::i_click_on, ["Yes", "button", '.$cssclass.', "css_element"]');
+    }
+
 }
