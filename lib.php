@@ -37,7 +37,7 @@ function tool_skills_extend_navigation_course(navigation_node $navigation, stdCl
     global $PAGE;
 
     $addnode = $context->contextlevel === CONTEXT_COURSE;
-    $addnode = $addnode && has_capability('tool/skills:managecourseskills', $context);
+    $addnode = $addnode && has_capability('tool/skills:managecourseskillslist', $context);
     if ($addnode) {
         $id = $context->instanceid;
         $url = new moodle_url('/admin/tool/skills/manage/courselist.php', [
@@ -52,7 +52,7 @@ function tool_skills_extend_navigation_course(navigation_node $navigation, stdCl
         if (empty($navigation->get_children_key_list())) {
             $navigation->add_node($node, null);
         } else {
-            $navigation->add_node($node, 'gradebooksetup');
+            $navigation->add_node($node, 'coursereports');
         }
     }
 }
@@ -164,4 +164,41 @@ function tool_skills_get_fontawesome_icon_map() {
         'tool_skills:f/archive' => 'fa-archive',
         'tool_skills:f/active' => 'fa-undo',
     ];
+}
+
+
+/**
+ * File serving callback
+ *
+ * @param stdClass $course course object
+ * @param stdClass $cm course module object
+ * @param stdClass $context context object
+ * @param string $filearea file area
+ * @param array $args extra arguments
+ * @param bool $forcedownload whether or not force download
+ * @param array $options additional options affecting the file serving
+ * @return bool false if the file was not found, just send the file otherwise and do not return anything
+ */
+function tool_skills_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
+
+    if ($context->contextlevel != CONTEXT_SYSTEM) {
+        return false;
+    }
+
+    require_login();
+
+    if ($filearea == 'levelimage') {
+
+        $relativepath = implode('/', $args);
+
+        $fullpath = "/$context->id/tool_skills/$filearea/$relativepath";
+
+        $fs = get_file_storage();
+        $file = $fs->get_file_by_hash(sha1($fullpath));
+        if (!$file || $file->is_directory()) {
+            return false;
+        }
+
+        send_stored_file($file, null, 0, $forcedownload, $options);
+    }
 }
