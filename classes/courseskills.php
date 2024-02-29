@@ -220,27 +220,21 @@ class courseskills extends \tool_skills\allocation_method {
                 // Start the database transaction.
                 $transaction = $DB->start_delegated_transaction();
 
-                if ($record = $DB->get_record('tool_skills_awardlogs', ['userid' => $userid, 'skill' => $csdata->skill,
-                    'methodid' => $csdata->id, 'method' => 'course',
-                    ])) {
-                    $record->points = $record->points;
-                    $DB->update_record('tool_skills_awardlogs', $record);
-                } else {
-                    switch ($csdata->uponcompletion) {
+                switch ($csdata->uponcompletion) {
 
-                        case skills::COMPLETIONFORCELEVEL:
-                            $skill->force_level($this, $csdata->level, $userid);
-                            break;
+                    case skills::COMPLETIONFORCELEVEL:
+                        $skill->force_level($this, $csdata->level, $userid);
+                        break;
 
-                        case skills::COMPLETIONSETLEVEL:
-                            $skill->moveto_level($this, $csdata->level, $userid);
-                            break;
+                    case skills::COMPLETIONSETLEVEL:
+                        $skill->moveto_level($this, $csdata->level, $userid);
+                        break;
 
-                        case skills::COMPLETIONPOINTS:
-                            $skill->increase_points($this, $csdata->points, $userid);
-                            break;
-                    }
+                    case skills::COMPLETIONPOINTS:
+                        $skill->increase_points($this, $csdata->points, $userid);
+                        break;
                 }
+
                 // End the database transaction.
                 $transaction->allow_commit();
             }
