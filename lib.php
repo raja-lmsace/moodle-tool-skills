@@ -37,7 +37,7 @@ function tool_skills_extend_navigation_course(navigation_node $navigation, stdCl
     global $PAGE;
 
     $addnode = $context->contextlevel === CONTEXT_COURSE;
-    $addnode = $addnode && has_capability('tool/skills:managecourseskills', $context);
+    $addnode = $addnode && has_capability('tool/skills:managecourseskillslist', $context);
     if ($addnode) {
         $id = $context->instanceid;
         $url = new moodle_url('/admin/tool/skills/manage/courselist.php', [
@@ -52,7 +52,7 @@ function tool_skills_extend_navigation_course(navigation_node $navigation, stdCl
         if (empty($navigation->get_children_key_list())) {
             $navigation->add_node($node, null);
         } else {
-            $navigation->add_node($node, 'gradebooksetup');
+            $navigation->add_node($node, 'coursereports');
         }
     }
 }
@@ -100,6 +100,14 @@ function tool_skills_myprofile_navigation(tree $tree, $user, $iscurrentuser, $co
             $skillslist[$skillid] = $data->skillobj; // Skill instance.
         }
 
+        // Upon completion.
+        $options = [
+            \tool_skills\skills::COMPLETIONNOTHING => get_string('completionnothingresult', 'tool_skills'),
+            \tool_skills\skills::COMPLETIONPOINTS => get_string('completionpointsresult', 'tool_skills'),
+            \tool_skills\skills::COMPLETIONSETLEVEL => get_string('completionsetlevelresult', 'tool_skills'),
+            \tool_skills\skills::COMPLETIONFORCELEVEL => get_string('completionforcelevelresult', 'tool_skills'),
+        ];
+
         foreach ($newskills as $skillid => $skills) {
             $skill = $skillslist[$skillid];
             $skillpoints = $skill->get_points_to_earnskill();
@@ -116,6 +124,7 @@ function tool_skills_myprofile_navigation(tree $tree, $user, $iscurrentuser, $co
             $skillstr .= html_writer::start_tag('ul'); // Start the list of skills courses.
 
             foreach ($skills as $id => $data) {
+
                 // Course skill object.
                 $skillcourse = $data->skillcourse;
                 $pointstoearn = $skillcourse->get_points_earned_fromcourse();
@@ -127,11 +136,29 @@ function tool_skills_myprofile_navigation(tree $tree, $user, $iscurrentuser, $co
                 $course = $data->skillcourse->get_course();
                 $li = html_writer::link($courseurl, format_string($course->fullname));
 
-                $coursepointstr = get_string('pointsforcompletion', 'tool_skills') . " : " . $pointstoearn;
-                $coursepointstr .= html_writer::tag('b',
+                // Generate the expected result of the course completion.
+                $pointstr = get_string('uponcompletionresult', 'tool_skills') . ": ";
+                if (isset($options[$data->uponcompletion])) {
+                    $pointstr .= $options[$data->uponcompletion];
+
+                    // Upon compeltion of course user will reached the levels.
+                    $resultstring = '';
+                    if (in_array($data->uponcompletion, [\tool_skills\skills::COMPLETIONSETLEVEL,
+                        tool_skills\skills::COMPLETIONFORCELEVEL])) {
+                        $resultstring = isset($data->levels[$data->level]) ? format_string($data->levels[$data->level]->name) : '';
+
+                    } else if ($data->uponcompletion == \tool_skills\skills::COMPLETIONPOINTS) { // Points.
+                        $resultstring = $data->points;
+                    }
+                    $resultstring .= '<br>';
+                    $pointstr .= html_writer::tag('span', $resultstring, ['class' => 'course-completion-result']);
+                }
+
+                $pointstr .= get_string('pointsforcompletion', 'tool_skills') . " : " . $pointstoearn;
+                $pointstr .= html_writer::tag('b',
                     " (".get_string('earned', 'tool_skills') . ": " .( $pointsfromcourse ?? 0) . ")" );
 
-                $li .= html_writer::tag('p', $coursepointstr, ['class' => 'skills-points-'.$course->shortname]);
+                $li .= html_writer::tag('p', $pointstr, ['class' => 'skills-points-'.$course->shortname]);
 
                 $skillstr .= html_writer::tag('li', $li);
 
@@ -164,4 +191,41 @@ function tool_skills_get_fontawesome_icon_map() {
         'tool_skills:f/archive' => 'fa-archive',
         'tool_skills:f/active' => 'fa-undo',
     ];
+}
+
+
+/**
+ * File serving callback
+ *
+ * @param stdClass $course course object
+ * @param stdClass $cm course module object
+ * @param stdClass $context context object
+ * @param string $filearea file area
+ * @param array $args extra arguments
+ * @param bool $forcedownload whether or not force download
+ * @param array $options additional options affecting the file serving
+ * @return bool false if the file was not found, just send the file otherwise and do not return anything
+ */
+function tool_skills_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=[]) {
+
+    if ($context->contextlevel != CONTEXT_SYSTEM) {
+        return false;
+    }
+
+    require_login();
+
+    if ($filearea == 'levelimage') {
+
+        $relativepath = implode('/', $args);
+
+        $fullpath = "/$context->id/tool_skills/$filearea/$relativepath";
+
+        $fs = get_file_storage();
+        $file = $fs->get_file_by_hash(sha1($fullpath));
+        if (!$file || $file->is_directory()) {
+            return false;
+        }
+
+        send_stored_file($file, null, 0, $forcedownload, $options);
+    }
 }

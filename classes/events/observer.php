@@ -47,7 +47,7 @@ class observer {
         $relateduserid = $data['relateduserid']; // Completed user id.
 
         // Manage the upon completion options for various skills assigned in this course.
-        courseskills::get($courseid)->manage_course_completions($relateduserid, $data);
+        courseskills::get($courseid)->manage_course_completions($relateduserid);
     }
 
     /**
@@ -59,7 +59,7 @@ class observer {
     public static function user_deleted(\core\event\user_deleted $event) {
         // Fetch the event data.
         $data = $event->get_data();
-        $relateduserid = $data['userid']; // Completed user id.
+        $relateduserid = $data['objectid']; // Completed user id.
         // Remove the user skill points.
         user::get($relateduserid)->remove_user_skillpoints();
     }
